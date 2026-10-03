@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<title>S&amp;B Atelier Render</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500..800&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#000;
+    --ebony:#0F0D09;
+    --raised:#181410;
+    --raised-2:#221C14;
+    --gold:#E3B341;
+    --gold-hi:#F7D774;
+    --gold-lo:#A67C1A;
+    --gold-grad:linear-gradient(135deg,#F7D774 0%,#E3B341 48%,#B8891F 100%);
+    --ivory:#F4ECD8;
+    --muted:#B5A98A;
+    --faint:#8C8166;
+    --line:rgba(227,179,65,.30);
+    --line-soft:rgba(227,179,65,.15);
+    --danger:#F08A6C;
+    --f-display:'Bodoni Moda','Didot','Playfair Display',Georgia,serif;
+    --f-ui:'Jost','Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif;
+    --bar-h:56px;
+    font-family:var(--f-ui);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{scroll-padding-top:calc(var(--bar-h) + env(safe-area-inset-top,0px) + 12px);-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;background:var(--black);color:var(--ivory);
+    font-family:var(--f-ui);font-size:16px;line-height:1.5;
+    min-height:100vh;
+    padding-top:calc(var(--bar-h) + env(safe-area-inset-top,0px));
+    padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);
+    overflow-x:hidden;
+  }
+  button{font-family:inherit;color:inherit;}
+  svg.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+  svg.ic.fill{fill:currentColor;stroke:none;}
+  :focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px;}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+
+  /* ---------- Barra superior ---------- */
+  .appbar{
+    position:fixed;top:0;left:0;right:0;z-index:40;
+    height:calc(var(--bar-h) + env(safe-area-inset-top,0px));
+    padding:env(safe-area-inset-top,0px) calc(8px + env(safe-area-inset-right,0px)) 0 calc(8px + env(safe-area-inset-left,0px));
+    display:flex;align-items:center;gap:6px;
+    background:var(--black);border-bottom:1px solid var(--line);
+  }
+  .burger{
+    width:48px;height:48px;border:0;background:transparent;cursor:pointer;border-radius:12px;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;flex:none;
+  }
+  .burger span{display:block;width:24px;height:2px;border-radius:2px;background:var(--gold);transition:transform .25s ease,opacity .2s ease;}
+  .burger[aria-expanded="true"] span:nth-child(1){transform:translateY(8px) rotate(45deg);}
+  .burger[aria-expanded="true"] span:nth-child(2){opacity:0;}
+  .burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-8px) rotate(-45deg);}
+  .backbtn{
+    width:44px;height:44px;border:0;background:transparent;cursor:pointer;border-radius:12px;flex:none;
+    display:flex;align-items:center;justify-content:center;color:var(--gold);margin-right:-4px;
+  }
+  .backbtn:active{background:var(--raised);}
+  .backbtn[hidden]{display:none;}
+  .brand{display:flex;align-items:center;gap:9px;min-width:0;}
+  body.subpage .brand{display:none;}
+  body.subpage .appbar .page-title{margin-left:10px;text-align:left;}
+  .mark{
+    width:32px;height:32px;border-radius:50%;flex:none;
+    border:1.5px solid var(--gold);color:var(--gold-hi);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--f-display);font-weight:700;font-size:11px;letter-spacing:-.01em;
+  }
+  .brand-name{font-family:var(--f-display);font-weight:600;font-size:18px;color:var(--ivory);white-space:nowrap;}
+  .page-title{margin-left:auto;padding-right:8px;font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  body.subpage .page-title{font-size:17px;font-weight:500;color:var(--ivory);flex:1;}
+
+  /* ---------- Menu lateral ---------- */
+  .scrim{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;}
+  .scrim.open{opacity:1;visibility:visible;}
+  .drawer{
+    position:fixed;top:0;bottom:0;left:0;z-index:60;width:min(86vw,340px);
+    background:var(--black);border-right:1px solid var(--gold);
+    transform:translateX(-102%);visibility:hidden;
+    transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility .28s;
+    display:flex;flex-direction:column;
+    padding:calc(env(safe-area-inset-top,0px) + 14px) 14px calc(env(safe-area-inset-bottom,0px) + 14px);
+    overflow-y:auto;
+  }
+  .drawer.open{transform:none;visibility:visible;}
+  .drawer-head{display:flex;align-items:center;gap:12px;padding:6px 6px 18px;border-bottom:1px solid var(--line-soft);margin-bottom:10px;}
+  .drawer-head .mark{width:42px;height:42px;font-size:14px;}
+  .drawer-head strong{display:block;font-family:var(--f-display);font-size:20px;font-weight:600;line-height:1.1;}
+  .drawer-head small{color:var(--muted);font-size:13px;}
+  .drawer-close{margin-left:auto;width:44px;height:44px;border:0;background:transparent;color:var(--gold);cursor:pointer;border-radius:12px;display:flex;align-items:center;justify-content:center;}
+  .nav-item{
+    display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+    background:transparent;border:0;border-left:3px solid transparent;border-radius:0 12px 12px 0;
+    padding:13px 12px;cursor:pointer;color:var(--ivory);min-height:56px;
+  }
+  .nav-item svg{color:var(--gold);}
+  .nav-item b{display:block;font-weight:500;font-size:16.5px;line-height:1.2;}
+  .nav-item small{display:block;color:var(--muted);font-size:13px;line-height:1.3;margin-top:2px;}
+  .nav-item.active{background:var(--raised);border-left-color:var(--gold);}
+  .nav-item.active b{color:var(--gold-hi);}
+  .drawer-foot{margin-top:auto;padding:16px 8px 0;color:var(--faint);font-size:13px;line-height:1.45;border-top:1px solid var(--line-soft);}
+
+  /* ---------- Páginas ---------- */
+  .page{display:none;}
+  .page.active{display:block;}
+  .wrap{max-width:760px;margin:0 auto;padding:22px 16px 24px;}
+  h1.ph{font-family:var(--f-display);font-weight:600;font-size:clamp(28px,7.4vw,38px);line-height:1.1;margin:4px 0 8px;letter-spacing:-.005em;}
+  .lead{color:var(--muted);margin:0 0 20px;max-width:56ch;font-size:16.5px;}
+  h2.sh{font-family:var(--f-display);font-weight:600;font-size:22px;margin:26px 0 10px;}
+
+  /* ---------- Início ---------- */
+  .hero{position:relative;border:1px solid var(--line);border-radius:22px 22px 6px 22px;background:var(--ebony);overflow:hidden;margin-bottom:18px;}
+  .hero svg.art{display:block;width:100%;height:auto;}
+  .hero-copy{padding:4px 20px 22px;}
+  .hero-copy h1{font-family:var(--f-display);font-weight:600;font-size:clamp(30px,8.4vw,44px);line-height:1.08;margin:0 0 10px;}
+  .hero-copy p{margin:0;color:var(--muted);max-width:46ch;}
+  .routes{display:grid;gap:12px;}
+  .route{
+    display:flex;align-items:center;gap:14px;text-align:left;width:100%;cursor:pointer;
+    padding:16px;border-radius:16px;border:1px solid var(--line);background:var(--ebony);min-height:76px;
+  }
+  .route svg{color:var(--gold);width:28px;height:28px;}
+  .route b{display:block;font-size:17.5px;font-weight:600;line-height:1.2;}
+  .route small{display:block;color:var(--muted);font-size:14px;margin-top:2px;line-height:1.35;}
+  .route.main{background:var(--gold-grad);border-color:transparent;color:#000;border-radius:16px 16px 16px 4px;}
+  .route.main svg,.route.main small{color:#1a1204;}
+  .route:active{transform:scale(.99);}
+  ol.flow{list-style:none;counter-reset:f;margin:0;padding:0;display:grid;gap:0;}
+  ol.flow li{counter-increment:f;position:relative;padding:2px 0 18px 52px;color:var(--muted);}
+  ol.flow li::before{content:counter(f);position:absolute;left:0;top:0;width:36px;height:36px;border-radius:50%;border:1.5px solid var(--gold);color:var(--gold-hi);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:600;font-size:17px;background:var(--black);}
+  ol.flow li::after{content:'';position:absolute;left:17.25px;top:38px;bottom:2px;width:1.5px;background:var(--line);}
+  ol.flow li:last-child::after{display:none;}
+  ol.flow li b{display:block;color:var(--ivory);font-weight:600;font-size:17px;}
+
+  /* ---------- Seções (sanfona) ---------- */
+  details.sec{background:var(--ebony);border:1px solid var(--line-soft);border-radius:18px;margin-bottom:14px;}
+  details.sec[open]{border-color:var(--line);}
+  details.sec > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:15px 16px;min-height:60px;border-radius:18px;}
+  details.sec > summary::-webkit-details-marker{display:none;}
+  .badge{
+    width:30px;height:30px;border-radius:50%;flex:none;border:1.5px solid var(--gold);color:var(--gold-hi);
+    display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:600;font-size:15px;
+    transition:background .2s,color .2s;
+  }
+  details.sec.filled .badge{background:var(--gold);color:#000;border-color:var(--gold);}
+  .sec-title{font-family:var(--f-display);font-weight:600;font-size:19px;line-height:1.2;flex:1;}
+  .sec-title small{display:block;font-family:var(--f-ui);font-weight:400;font-size:13.5px;color:var(--muted);margin-top:2px;}
+  .chev{color:var(--gold);transition:transform .25s ease;}
+  details.sec[open] .chev{transform:rotate(180deg);}
+  .sec-body{padding:2px 16px 18px;}
+  .sub-h{display:flex;align-items:center;gap:8px;margin:20px 0 10px;color:var(--gold-hi);font-weight:600;font-size:15px;padding-bottom:8px;border-bottom:1px solid var(--line-soft);}
+  .sub-h:first-child{margin-top:4px;}
+  .sub-h svg{width:18px;height:18px;}
+
+  /* ---------- Campos ---------- */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:560px){.grid2{grid-template-columns:1fr;}}
+  .field{display:block;margin-bottom:12px;}
+  .field > span.lbl{display:block;font-size:14px;font-weight:500;color:var(--muted);margin-bottom:6px;}
+  .hint{display:block;font-size:13.5px;color:var(--faint);margin-top:6px;line-height:1.4;}
+  select,input[type=text],input[type=number]{
+    width:100%;min-height:50px;border:1px solid var(--line-soft);border-radius:12px;
+    padding:12px 14px;font:inherit;font-size:16px;color:var(--ivory);background-color:var(--black);
+    -webkit-appearance:none;appearance:none;
+  }
+  input::placeholder{color:var(--faint);}
+  select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23E3B341' stroke-width='1.8' fill='none'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;text-overflow:ellipsis;
+  }
+  select option,select optgroup{background:#111;color:var(--ivory);}
+  select:focus,input:focus{border-color:var(--gold);outline:2px solid var(--gold-hi);outline-offset:1px;}
+  input[type=range]{width:100%;height:36px;accent-color:var(--gold);background:transparent;}
+  .stepper{display:flex;align-items:stretch;border:1px solid var(--line-soft);border-radius:12px;background:var(--black);overflow:hidden;}
+  .stepper button{width:52px;border:0;background:var(--raised);color:var(--gold-hi);font-size:22px;cursor:pointer;min-height:50px;}
+  .stepper button:active{background:var(--raised-2);}
+  .stepper input{border:0;border-radius:0;text-align:center;min-height:50px;flex:1;min-width:0;background:transparent;}
+
+  .switch{display:flex;align-items:center;gap:14px;padding:12px 2px;cursor:pointer;border-bottom:1px solid var(--line-soft);}
+  .switch:last-of-type{border-bottom:0;}
+  .switch input{position:absolute;opacity:0;width:1px;height:1px;}
+  .switch .txt{flex:1;}
+  .switch .txt b{display:block;font-weight:500;font-size:16px;}
+  .switch .txt small{display:block;color:var(--muted);font-size:13.5px;line-height:1.35;}
+  .track{width:52px;height:30px;border-radius:99px;border:1.5px solid var(--line);background:var(--black);position:relative;flex:none;transition:background .2s,border-color .2s;}
+  .track::after{content:'';position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s;}
+  .switch input:checked + .track{background:var(--gold);border-color:var(--gold);}
+  .switch input:checked + .track::after{transform:translateX(22px);background:#000;}
+  .switch input:focus-visible + .track{outline:2px solid var(--gold-hi);outline-offset:2px;}
+
+  /* ---------- Botões ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;
+    min-height:52px;padding:0 24px;border-radius:999px;font-size:16.5px;font-weight:600;border:1px solid transparent;
+    transition:transform .1s ease,filter .15s ease;text-align:center;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .btn.primary{background:var(--gold-grad);color:#000;box-shadow:0 0 0 1px rgba(247,215,116,.35),0 10px 26px -10px rgba(227,179,65,.55);}
+  .btn.ghost{background:transparent;color:var(--gold-hi);border-color:var(--line);}
+  .btn.ghost:hover{background:var(--raised);}
+  .btn.block{width:100%;}
+  .btn.sm{min-height:44px;padding:0 18px;font-size:15px;}
+  .ibtn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line-soft);background:var(--raised);color:var(--gold-hi);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none;}
+  .ibtn:active{background:var(--raised-2);}
+  .ibtn:disabled{opacity:.35;cursor:not-allowed;}
+  .ibtn.danger{color:var(--danger);}
+  .actionbar{
+    margin:22px 0 0;
+    padding:0 0 calc(4px + env(safe-area-inset-bottom,0px));
+    display:flex;gap:10px;
+  }
+
+  /* ---------- Envio de imagem ---------- */
+  .upload{border:1.5px dashed var(--line);border-radius:16px;padding:28px 16px;text-align:center;cursor:pointer;background:var(--black);}
+  .upload:hover{border-color:var(--gold);}
+  .upload .ring{width:52px;height:52px;border-radius:50%;background:var(--gold-grad);color:#000;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;}
+  .upload strong{display:block;font-size:17px;}
+  .upload small{color:var(--muted);font-size:14px;}
+  #preview{display:none;width:100%;max-height:260px;object-fit:contain;border-radius:12px;margin-top:12px;border:1px solid var(--line-soft);background:var(--black);}
+  .check-row{display:flex;gap:14px;align-items:flex-start;padding:14px;border:1px solid var(--line-soft);border-radius:14px;background:var(--black);cursor:pointer;}
+  .check-row input{width:22px;height:22px;margin-top:2px;accent-color:var(--gold);flex:none;}
+  .check-row b{display:block;font-weight:500;}
+  .check-row small{color:var(--muted);font-size:14px;line-height:1.4;display:block;margin-top:2px;}
+
+  /* ---------- Saída de prompts ---------- */
+  .out-card{background:var(--ebony);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:16px;scroll-margin-top:80px;}
+  .out-card h3{font-family:var(--f-display);font-weight:600;font-size:19px;margin:0 0 10px;}
+  .out-card textarea{width:100%;min-height:170px;border:1px solid var(--line-soft);border-radius:12px;padding:12px;font:inherit;font-size:15px;line-height:1.55;color:var(--ivory);background:var(--black);resize:vertical;}
+  .out-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+
+  /* ---------- Palco de vídeo ---------- */
+  .stage-frame{
+    padding:10px;border-radius:6px;border:1px solid var(--gold);background:#000;
+    box-shadow:0 0 0 4px #000,0 0 0 5px var(--line),0 24px 60px -24px rgba(227,179,65,.35);
+    display:flex;justify-content:center;align-items:center;margin:6px 5px 14px;
+  }
+  canvas#stage{display:block;max-width:100%;max-height:min(58vh,560px);width:auto;height:auto;background:#000;border-radius:2px;}
+  .transport{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .playbtn{width:52px;height:52px;border-radius:50%;border:0;background:var(--gold-grad);color:#000;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;}
+  .playbtn:active{transform:scale(.96);}
+  .time{font-variant-numeric:tabular-nums;font-size:18px;font-weight:500;}
+  .time small{color:var(--muted);font-size:15px;font-weight:400;}
+  .transport .note{margin-left:auto;color:var(--faint);font-size:13.5px;text-align:right;line-height:1.3;}
+  .tl{position:relative;height:66px;border-radius:12px;border:1px solid var(--line);background:var(--ebony);overflow:hidden;touch-action:none;cursor:pointer;display:flex;user-select:none;-webkit-user-select:none;}
+  .tl .empty{margin:auto;color:var(--faint);font-size:14px;padding:0 12px;text-align:center;}
+  .seg{position:relative;min-width:0;background-size:cover;background-position:center;border-right:1px solid #000;}
+  .seg:last-of-type{border-right:0;}
+  .seg::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.72),rgba(0,0,0,.05) 65%);}
+  .seg span{position:absolute;left:7px;bottom:4px;z-index:1;font-size:12.5px;font-weight:500;color:var(--ivory);}
+  .tmark{position:absolute;top:50%;width:17px;height:17px;transform:translate(-50%,-50%) rotate(45deg);background:var(--gold);border:2px solid #000;border-radius:3px;z-index:2;pointer-events:none;}
+  .tmark.cut{background:#000;border-color:var(--gold);}
+  .playhead{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--gold-hi);box-shadow:0 0 10px var(--gold);z-index:3;pointer-events:none;}
+  .tl-legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--faint);font-size:13px;margin:8px 2px 16px;align-items:center;}
+  .tl-legend i{display:inline-block;width:11px;height:11px;transform:rotate(45deg);background:var(--gold);border-radius:2px;margin-right:8px;vertical-align:-1px;}
+  .tl-legend i.cut{background:transparent;border:2px solid var(--gold);width:11px;height:11px;}
+
+  .scene{background:var(--black);border:1px solid var(--line-soft);border-radius:14px;padding:12px;margin-bottom:12px;}
+  .scene-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .scene-head img{width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--line);flex:none;background:var(--ebony);}
+  .scene-title{flex:1;min-width:0;}
+  .scene-title b{display:block;font-family:var(--f-display);font-size:18px;font-weight:600;line-height:1.2;}
+  .scene-title small{color:var(--muted);font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .scene-tools{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+  .scene-tools .ibtn{width:40px;height:40px;border-radius:10px;}
+  .scene-tools .ibtn svg{width:19px;height:19px;}
+  .scene .field:last-child{margin-bottom:0;}
+  .scene-end{font-size:14px;color:var(--faint);padding-top:2px;}
+  .empty-scenes{border:1px dashed var(--line);border-radius:14px;padding:22px 16px;text-align:center;color:var(--muted);margin-bottom:12px;}
+  .empty-scenes p{margin:0 0 12px;}
+  .summary-line{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:14.5px;margin:0 2px 12px;}
+  .summary-line b{color:var(--gold-hi);font-weight:600;}
+  .summary-line.warn b{color:var(--danger);}
+
+  .progress{height:10px;border-radius:99px;background:#000;border:1px solid var(--line);overflow:hidden;margin:10px 0 8px;}
+  .progress > i{display:block;height:100%;width:0;background:var(--gold-grad);}
+  .rec-box{display:none;background:var(--ebony);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:14px;}
+  .rec-box.show{display:block;}
+  .rec-box b{display:block;font-weight:600;}
+  .rec-box small{color:var(--muted);font-size:14px;}
+  .result{display:none;background:var(--ebony);border:1px solid var(--line);border-radius:18px;padding:14px;margin-top:6px;scroll-margin-top:80px;}
+  .result.show{display:block;}
+  .result h3{font-family:var(--f-display);font-weight:600;font-size:20px;margin:2px 0 10px;}
+  .result video{display:block;width:100%;max-height:72vh;border-radius:10px;background:#000;border:1px solid var(--line-soft);}
+
+  /* ---------- Manual ---------- */
+  ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;}
+  ol.steps li{counter-increment:s;position:relative;padding:0 0 16px 46px;color:var(--muted);}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:-1px;width:32px;height:32px;border-radius:50%;background:var(--raised-2);border:1px solid var(--line);color:var(--gold-hi);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:600;font-size:15px;}
+  ol.steps li b{color:var(--ivory);font-weight:600;}
+  ol.steps li:last-child{padding-bottom:4px;}
+  .man p{color:var(--muted);margin:0 0 12px;}
+  .man p b,.man li b{color:var(--ivory);font-weight:600;}
+  .man ul{margin:0 0 12px;padding-left:20px;color:var(--muted);}
+  .man ul li{margin-bottom:6px;}
+  .gloss{display:grid;gap:0;margin:0;}
+  .gloss dt{color:var(--gold-hi);font-weight:600;padding-top:12px;}
+  .gloss dd{margin:2px 0 0;color:var(--muted);padding-bottom:12px;border-bottom:1px solid var(--line-soft);font-size:15px;}
+  .gloss dd:last-child{border-bottom:0;}
+  .callout{border-left:3px solid var(--gold);background:var(--black);border-radius:0 12px 12px 0;padding:12px 14px;margin:0 0 12px;color:var(--muted);font-size:15px;}
+  .callout b{color:var(--gold-hi);}
+
+  .toast{
+    position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:80;
+    transform:translate(-50%,16px);max-width:min(92vw,440px);
+    background:var(--black);color:var(--ivory);border:1px solid var(--gold);border-radius:14px;
+    padding:12px 18px;font-size:15px;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  @media (min-width:900px){
+    .wrap{padding-top:32px;}
+    .routes{grid-template-columns:1fr 1fr;}
+    .route.main{grid-column:1 / -1;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;animation:none !important;scroll-behavior:auto !important;}
+  }
+</style>
+</head>
+<body>
+
+<!-- Ícones -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.7"/><path d="M3 17l5-4 4 3 3-2 6 4"/></symbol>
+    <symbol id="i-film" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 4.7 4.7 1.8-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h12"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5l12 7-12 7z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 16V4M7 8l5-4 5 4M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V5M7 9l5-5 5 5M5 19h14"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-rec" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></symbol>
+    <symbol id="i-cam" viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 11l5-3v8l-5-3"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></symbol>
+  </defs>
+</svg>
+
+<!-- Barra superior -->
+<header class="appbar">
+  <button class="backbtn" id="backBtn" aria-label="Voltar para o início" hidden>
+    <svg class="ic"><use href="#i-arrow-left"/></svg>
+  </button>
+  <button class="burger" id="menuBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="drawer">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="brand"><div class="mark">S&amp;B</div><div class="brand-name">S&amp;B Atelier Render</div></div>
+  <div class="page-title" id="pageTitle">Início</div>
+</header>
+
+<div class="scrim" id="scrim"></div>
+
+<!-- Menu lateral -->
+<nav class="drawer" id="drawer" aria-label="Menu principal" aria-hidden="true">
+  <div class="drawer-head">
+    <div class="mark">S&amp;B</div>
+    <div><strong>S&amp;B Atelier Render</strong><small>Do ambiente vazio ao vídeo pronto</small></div>
+    <button class="drawer-close" id="drawerClose" aria-label="Fechar menu"><svg class="ic"><use href="#i-close"/></svg></button>
+  </div>
+  <button class="nav-item" data-go="home"><svg class="ic"><use href="#i-home"/></svg><span><b>Início</b><small>Comece por aqui</small></span></button>
+  <button class="nav-item" data-go="imagem"><svg class="ic"><use href="#i-image"/></svg><span><b>Prompt de imagem</b><small>Render fotorrealista do ambiente</small></span></button>
+  <button class="nav-item" data-go="studio"><svg class="ic"><use href="#i-film"/></svg><span><b>Cenas e vídeo</b><small>Imagens, prompt e vídeo, tudo aqui</small></span></button>
+  <button class="nav-item" data-go="manual"><svg class="ic"><use href="#i-book"/></svg><span><b>Manual</b><small>Passo a passo de cada tela</small></span></button>
+  <div class="drawer-foot">Suas imagens ficam neste aparelho. Nada é enviado para servidores.</div>
+</nav>
+
+<main>
+
+<!-- ============ INÍCIO ============ -->
+<section class="page active" id="page-home" data-title="Início">
+  <div class="wrap">
+    <div class="hero">
+      <svg class="art" viewBox="0 0 360 200" role="img" aria-label="Ilustração de uma sala com o trajeto dourado da câmera entrando na cena e girando ao redor">
+        <rect width="360" height="200" fill="#0F0D09"/>
+        <g stroke="#E3B341" stroke-opacity=".38" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 152H342"/>
+          <rect x="236" y="38" width="76" height="72" rx="3"/>
+          <path d="M274 38v72M236 74h76"/>
+          <rect x="70" y="114" width="118" height="38" rx="9"/>
+          <rect x="78" y="94" width="102" height="26" rx="8"/>
+          <path d="M214 66v86M203 66h22l-4-16h-14z"/>
+          <ellipse cx="128" cy="170" rx="64" ry="9"/>
+        </g>
+        <path d="M28 176C40 62 292 26 318 104C334 158 196 176 190 122C185 88 244 82 240 108" fill="none" stroke="#F7D774" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="1 9"/>
+        <path d="M240 108C238 118 232 120 228 118" fill="none" stroke="#F7D774" stroke-width="2.2" stroke-linecap="round"/>
+        <g fill="none" stroke="#F7D774" stroke-width="2" stroke-linejoin="round">
+          <rect x="-19" y="-12" width="38" height="24" rx="2" transform="translate(30 172) rotate(-72)"/>
+          <rect x="-19" y="-12" width="38" height="24" rx="2" transform="translate(304 70) rotate(38)"/>
+          <rect x="-19" y="-12" width="38" height="24" rx="2" transform="translate(226 118) rotate(-20)" fill="#E3B341" fill-opacity=".18"/>
+        </g>
+      </svg>
+      <div class="hero-copy">
+        <h1>Do ambiente vazio ao vídeo pronto.</h1>
+        <p>Crie o prompt do render, junte as imagens em cenas e grave um único vídeo com movimentos de câmera, transições e efeitos.</p>
+      </div>
+    </div>
+
+    <div class="routes">
+      <button class="route main" data-go="studio"><svg class="ic"><use href="#i-film"/></svg><span><b>Montar vídeo com cenas</b><small>Junte imagens, gere o prompt para IA de vídeo e grave o vídeo final — tudo na mesma tela.</small></span></button>
+      <button class="route" data-go="imagem"><svg class="ic"><use href="#i-image"/></svg><span><b>Criar prompt de imagem</b><small>Descreva o ambiente e receba o prompt do render.</small></span></button>
+      <button class="route" data-go="manual"><svg class="ic"><use href="#i-book"/></svg><span><b>Ler o manual</b><small>Passo a passo para usar cada tela.</small></span></button>
+    </div>
+
+    <h2 class="sh">Como funciona</h2>
+    <ol class="flow">
+      <li><b>Descreva o ambiente</b>Escolha estilo, cores, luz e cenário. O app escreve o prompt do render para você.</li>
+      <li><b>Monte as cenas</b>Adicione as imagens prontas, defina a câmera e a transição de cada cena.</li>
+      <li><b>Grave e compartilhe</b>Veja a prévia, gere o vídeo final e envie direto pelo celular.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ PROMPT DE IMAGEM ============ -->
+<section class="page" id="page-imagem" data-title="Prompt de imagem">
+  <div class="wrap">
+    <h1 class="ph">Prompt de imagem</h1>
+    <p class="lead">Preencha o que quiser. Campos vazios ficam de fora do prompt.</p>
+
+    <details class="sec" data-track open>
+      <summary><span class="badge">1</span><span class="sec-title">Imagem de referência<small>Foto do ambiente ou desenho técnico</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <div class="upload" id="uploadArea" role="button" tabindex="0" aria-label="Escolher imagem de referência">
+          <div class="ring"><svg class="ic"><use href="#i-upload"/></svg></div>
+          <strong>Toque para escolher a foto</strong>
+          <small>Ambiente vazio, mobiliado ou desenho técnico</small>
+          <input type="file" id="fileInput" accept="image/*" hidden>
+        </div>
+        <img id="preview" alt="Pré-visualização da imagem de referência">
+        <p class="hint" id="fileName"></p>
+        <button class="btn ghost sm block" id="useRefBtn" type="button" style="display:none;margin-top:12px"><svg class="ic"><use href="#i-film"/></svg>Usar como cena do vídeo</button>
+      </div>
+    </details>
+
+    <details class="sec" data-track>
+      <summary><span class="badge">2</span><span class="sec-title">Renovação completa<small>Esvaziar o ambiente antes do projeto</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <label class="check-row">
+          <input type="checkbox" id="esvaziar">
+          <span><b>Remover móveis existentes</b><small>Esvazia o ambiente no digital e mantém arquitetura, dimensões, iluminação e perspectiva originais.</small></span>
+        </label>
+      </div>
+    </details>
+
+    <details class="sec" data-track>
+      <summary><span class="badge">3</span><span class="sec-title">Parâmetros de staging<small>Ambiente, estilo e foco</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <div class="sub-h">Sobre o ambiente</div>
+        <div class="grid2">
+          <label class="field"><span class="lbl">Função do ambiente</span>
+            <select id="funcao">
+              <option value="">Selecione a função</option>
+              <option value="Residencial">Residencial</option>
+              <option value="Comercial">Comercial</option>
+              <option value="Escritório">Escritório</option>
+              <option value="Hotelaria">Hotelaria</option>
+            </select>
+          </label>
+          <label class="field"><span class="lbl">Tipo de cômodo</span>
+            <select id="tipoComodo"><option value="">Selecione a função primeiro</option></select>
+          </label>
+        </div>
+        <div class="sub-h">Estilo e atmosfera</div>
+        <div class="grid2">
+          <label class="field"><span class="lbl">Estilo de interiores</span>
+            <select id="estilo">
+              <option value="">Selecione o estilo</option>
+              <option value="Moderno">Moderno</option>
+              <option value="Minimalista">Minimalista</option>
+              <option value="Escandinavo">Escandinavo</option>
+              <option value="Industrial">Industrial</option>
+              <option value="Boêmio">Boêmio</option>
+              <option value="Luxuoso">Luxuoso</option>
+            </select>
+          </label>
+          <label class="field"><span class="lbl">Arquitetura</span>
+            <select id="arquitetura">
+              <option value="">Selecione a arquitetura</option>
+              <option value="Contemporâneo">Contemporâneo</option>
+              <option value="Clássico">Clássico</option>
+              <option value="Modernista">Modernista</option>
+              <option value="Brutalista">Brutalista</option>
+              <option value="Vitoriano">Vitoriano</option>
+            </select>
+          </label>
+        </div>
+        <label class="field"><span class="lbl">Atmosfera</span>
+          <select id="atmosfera">
+            <option value="">Selecione a atmosfera</option>
+            <option value="Aconchegante">Aconchegante</option>
+            <option value="Claro e Arejado">Claro e arejado</option>
+            <option value="Dramático">Dramático</option>
+            <option value="Profissional">Profissional</option>
+          </select>
+        </label>
+        <div class="sub-h">Detalhes da cena</div>
+        <label class="field"><span class="lbl">Foco da cena</span>
+          <select id="foco">
+            <option value="">Qual é o foco principal?</option>
+            <option value="Ambiente Geral">Ambiente geral (visão ampla)</option>
+            <option value="Detalhe de Mobiliário">Detalhe de mobiliário</option>
+            <option value="Vista Externa / Janela">Vista externa / janela</option>
+            <option value="Textura de Acabamento">Textura de acabamento</option>
+            <option value="Composição Central">Composição central</option>
+          </select>
+        </label>
+      </div>
+    </details>
+
+    <details class="sec" data-track>
+      <summary><span class="badge">4</span><span class="sec-title">Clima e iluminação<small>Hora do dia e tempo</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <label class="field"><span class="lbl">Clima</span>
+          <select id="clima">
+            <option value="">Selecione o clima</option>
+            <option value="Golden Hour (Hora Dourada)">Golden Hour (hora dourada)</option>
+            <option value="Blue Hour (Hora Azul)">Blue Hour (hora azul)</option>
+            <option value="Midday (Meio-dia)">Midday (meio-dia)</option>
+            <option value="Night (Noite)">Night (noite)</option>
+            <option value="Sunset (Pôr do Sol)">Sunset (pôr do sol)</option>
+            <option value="Overcast (Nublado)">Overcast (nublado)</option>
+            <option value="Rainy (Chuvoso)">Rainy (chuvoso)</option>
+            <option value="Spring/Fall (Primavera/Outono)">Spring/Fall (primavera/outono)</option>
+          </select>
+        </label>
+      </div>
+    </details>
+
+    <details class="sec" data-track>
+      <summary><span class="badge">5</span><span class="sec-title">Personalização de cores<small>Paredes e acabamentos</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <div class="grid2">
+          <label class="field"><span class="lbl">Qual parede pintar?</span>
+            <select id="parede">
+              <option value="">Selecione a parede</option>
+              <option value="Parede Principal">Parede principal</option>
+              <option value="Parede Lateral Esquerda">Parede lateral esquerda</option>
+              <option value="Parede Lateral Direita">Parede lateral direita</option>
+              <option value="Parede de Fundo">Parede de fundo</option>
+              <option value="Todas as Paredes">Todas as paredes</option>
+            </select>
+          </label>
+          <label class="field"><span class="lbl">Tipo de aplicação</span>
+            <select id="aplicacao">
+              <option value="">Selecione o tipo</option>
+              <option value="Cor Sólida Fosca">Cor sólida fosca</option>
+              <option value="Cor Acetinada">Cor acetinada</option>
+              <option value="Tons Neutros">Tons neutros</option>
+              <option value="Tons Naturais">Tons naturais</option>
+              <option value="Filtro Quente ou Frio">Filtro quente ou frio</option>
+            </select>
+          </label>
+        </div>
+        <label class="field"><span class="lbl">Cor específica (opcional)</span>
+          <input type="text" id="corEspecifica" placeholder="Ex.: azul-marinho, #1E3A8A, off-white, terracota">
+        </label>
+      </div>
+    </details>
+
+    <details class="sec" data-track>
+      <summary><span class="badge">6</span><span class="sec-title">Cenários de convivência<small>Pessoas ou pets na cena</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <p class="hint" style="margin:0 0 12px">Insere pessoas ou pets de forma sutil. A arquitetura e o design continuam sendo os protagonistas.</p>
+        <label class="field"><span class="lbl">Tipo de cenário</span>
+          <select id="lifestyle">
+            <option value="Nenhum">Nenhum (ambiente vazio, sem pessoas)</option>
+            <option value="Pessoa Relaxando">Pessoa relaxando</option>
+            <option value="Casal Conversando">Casal conversando</option>
+            <option value="Família Reunida">Família reunida</option>
+            <option value="Pet no Ambiente">Pet no ambiente</option>
+            <option value="Trabalho Remoto">Trabalho remoto</option>
+            <option value="Leitura Tranquila">Leitura tranquila</option>
+          </select>
+        </label>
+      </div>
+    </details>
+
+    <div id="outImagemBox"></div>
+
+    <div class="actionbar">
+      <button class="btn primary block" id="gerarImagemBtn"><svg class="ic"><use href="#i-spark"/></svg>Gerar prompt de imagem</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CENAS E VÍDEO ============ -->
+<section class="page" id="page-studio" data-title="Cenas e vídeo">
+  <div class="wrap">
+    <h1 class="ph">Cenas e vídeo</h1>
+    <p class="lead">Adicione as imagens, escolha câmera e transições e grave tudo em um único vídeo.</p>
+
+    <div class="stage-frame"><canvas id="stage" width="594" height="1056" aria-label="Prévia do vídeo"></canvas></div>
+
+    <div class="transport">
+      <button class="playbtn" id="playBtn" aria-label="Reproduzir prévia"><svg class="ic fill" id="playIcon" style="width:26px;height:26px"><use href="#i-play"/></svg></button>
+      <div class="time"><span id="timeNow">0:00</span> <small>/ <span id="timeTotal">0:00</span></small></div>
+      <div class="note">Arraste na linha do tempo<br>para navegar</div>
+    </div>
+    <div class="tl" id="tlStrip" aria-label="Linha do tempo das cenas"></div>
+    <div class="tl-legend"><span><i></i>Transição</span><span><i class="cut"></i>Corte seco</span></div>
+
+    <div class="out-card" style="margin-top:0">
+      <h3>Prompt de vídeo para IA externa</h3>
+      <p class="hint" style="margin:0 0 14px">Gera um texto para colar em ferramentas de vídeo com IA (Runway, Pika e outras), já com as cenas, câmeras e transições montadas aqui ao lado.</p>
+      <div class="grid2">
+        <label class="field"><span class="lbl">Tipo de vídeo</span>
+          <select id="tipoVideo">
+            <option value="Tour Geral">Tour geral (visão ampla do ambiente)</option>
+            <option value="Passeio pelo Cômodo">Passeio pelo cômodo (walkthrough)</option>
+          </select>
+        </label>
+        <label class="field"><span class="lbl">Motor de geração</span>
+          <select id="motor">
+            <option value="Efeito Gratuito (FFmpeg Ken Burns)">Efeito gratuito (FFmpeg Ken Burns)</option>
+            <option value="IA Generativa (Runway ML, pago)">IA generativa (Runway ML, pago)</option>
+          </select>
+        </label>
+      </div>
+      <label class="switch"><span class="txt"><b>Incluir também o prompt de imagem</b><small>Gera os dois textos juntos, com os dados da tela Prompt de imagem.</small></span><input type="checkbox" id="incluirImg"><span class="track"></span></label>
+      <p class="hint" id="pvSummary" style="margin:14px 0 0"></p>
+      <button class="btn ghost block" id="gerarPromptVideoBtn" type="button" style="margin-top:14px"><svg class="ic"><use href="#i-spark"/></svg>Gerar prompt de vídeo</button>
+      <div id="outVideoBox"></div>
+    </div>
+
+    <div class="rec-box" id="recBox" role="status" aria-live="polite">
+      <b id="recMsg">Gravando…</b>
+      <div class="progress"><i id="recBar"></i></div>
+      <small id="recSub">Mantenha a tela ligada e não troque de aplicativo.</small>
+    </div>
+
+    <div class="result" id="resultCard">
+      <h3>Seu vídeo está pronto</h3>
+      <video id="videoResult" controls playsinline></video>
+      <div class="out-actions">
+        <button class="btn primary sm" id="dlBtn"><svg class="ic"><use href="#i-download"/></svg>Baixar vídeo</button>
+        <button class="btn ghost sm" id="shareBtn" style="display:none"><svg class="ic"><use href="#i-share"/></svg>Compartilhar</button>
+      </div>
+      <p class="hint" id="resultInfo"></p>
+    </div>
+
+    <details class="sec" open>
+      <summary><span class="badge">1</span><span class="sec-title">Cenas<small id="scenesSub">Nenhuma cena ainda</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <div class="summary-line" id="scenesSummary"></div>
+        <div id="scenesList"></div>
+        <button class="btn primary block" id="addScenesBtn" type="button"><svg class="ic"><use href="#i-plus"/></svg>Adicionar imagens</button>
+        <input type="file" id="sceneFiles" accept="image/*" multiple hidden>
+        <div class="sub-h" style="margin-top:22px">Padrão para as próximas cenas</div>
+        <div class="grid2">
+          <label class="field"><span class="lbl">Movimento de câmera</span><select id="defCam"></select></label>
+          <label class="field"><span class="lbl">Duração de cada cena (segundos)</span>
+            <div class="stepper"><button type="button" data-step="-1" data-target="defDur" aria-label="Diminuir">−</button><input type="number" id="defDur" min="1" max="30" step="1" value="6" inputmode="numeric"><button type="button" data-step="1" data-target="defDur" aria-label="Aumentar">+</button></div>
+          </label>
+        </div>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary><span class="badge">2</span><span class="sec-title">Transições<small>Como uma cena passa para a outra</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <label class="field"><span class="lbl">Transição padrão</span><select id="defTrans"></select><span class="hint" id="defTransHint"></span></label>
+        <label class="field"><span class="lbl">Duração da transição: <b id="transDurLbl" style="color:var(--gold-hi)">0,9 s</b></span>
+          <input type="range" id="transDur" min="0.3" max="2" step="0.1" value="0.9">
+        </label>
+        <button class="btn ghost sm block" id="applyTransAll" type="button">Aplicar em todas as cenas</button>
+        <p class="hint">Cada cena também tem a própria transição. Ajuste uma por uma na lista de cenas.</p>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary><span class="badge">3</span><span class="sec-title">Visual e efeitos<small>Cor, vinheta, grão e mais</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <label class="field"><span class="lbl">Tratamento de cor</span>
+          <select id="look">
+            <option value="Nenhum">Nenhum (cores originais)</option>
+            <option value="Dourado Quente">Dourado quente</option>
+            <option value="Cinematográfico">Cinematográfico (laranja e azul)</option>
+            <option value="Preto e Branco">Preto e branco</option>
+            <option value="Vintage">Vintage</option>
+            <option value="Frio">Frio (azulado)</option>
+            <option value="Vívido">Vívido (cores intensas)</option>
+          </select>
+        </label>
+        <label class="switch"><span class="txt"><b>Vinheta</b><small>Escurece as bordas e destaca o centro.</small></span><input type="checkbox" id="fxVinheta"><span class="track"></span></label>
+        <label class="switch"><span class="txt"><b>Grão de filme</b><small>Textura sutil de película.</small></span><input type="checkbox" id="fxGrao"><span class="track"></span></label>
+        <label class="switch"><span class="txt"><b>Barras de cinema</b><small>Faixas pretas no topo e na base.</small></span><input type="checkbox" id="fxBarras"><span class="track"></span></label>
+        <label class="switch"><span class="txt"><b>Fade na abertura e no fim</b><small>O vídeo surge e some suavemente do preto.</small></span><input type="checkbox" id="fxFades" checked><span class="track"></span></label>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary><span class="badge">4</span><span class="sec-title">Formato e qualidade<small>Proporção, resolução e enquadramento</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <label class="field"><span class="lbl">Formato de saída</span>
+          <select id="formato">
+            <option value="Vertical 9:16 (Stories/Reels/TikTok)">Vertical 9:16 (Stories, Reels, TikTok)</option>
+            <option value="Vertical 4:5 (Feed Instagram)">Vertical 4:5 (feed do Instagram)</option>
+            <option value="Quadrado 1:1 (Feed)">Quadrado 1:1 (feed)</option>
+            <option value="Horizontal 16:9 (YouTube/Facebook)">Horizontal 16:9 (YouTube, Facebook)</option>
+            <option value="Horizontal 4:3 (Clássico)">Horizontal 4:3 (clássico)</option>
+            <option value="Pinterest 2:3 (Retrato Longo)">Pinterest 2:3 (retrato longo)</option>
+          </select>
+        </label>
+        <label class="field"><span class="lbl">Qualidade</span>
+          <select id="qualidade">
+            <option value="alta">Alta (1080p)</option>
+            <option value="leve">Leve (720p, mais rápida em celulares simples)</option>
+          </select>
+        </label>
+        <label class="field"><span class="lbl">Enquadramento da imagem</span>
+          <select id="fit">
+            <option value="contain">Imagem inteira, com fundo desfocado nas bordas</option>
+            <option value="cover">Preencher a tela, a câmera percorre a imagem</option>
+          </select>
+          <span class="hint">Em vídeo vertical com fotos horizontais, "Preencher a tela" deixa os movimentos de câmera muito mais visíveis.</span>
+        </label>
+      </div>
+    </details>
+
+    <div class="actionbar">
+      <button class="btn primary block" id="gerarVideoBtn"><svg class="ic"><use href="#i-rec"/></svg>Gerar vídeo final</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MANUAL ============ -->
+<section class="page man" id="page-manual" data-title="Manual">
+  <div class="wrap">
+    <h1 class="ph">Manual de uso</h1>
+    <p class="lead">O S&amp;B Atelier Render faz duas coisas: escreve o prompt para gerar o render do ambiente e junta várias imagens em um único vídeo. Tudo acontece no seu aparelho.</p>
+
+    <details class="sec" open>
+      <summary><span class="badge">0</span><span class="sec-title">Abrir no celular<small>Faça isso uma vez</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <ol class="steps">
+          <li><b>Salve o arquivo</b> .html no celular (por exemplo, na pasta Downloads).</li>
+          <li><b>Abra no navegador.</b> No Android, toque no arquivo e escolha o Chrome. No iPhone, o Arquivos costuma mostrar só uma visualização simples: nesse caso, publique o arquivo em uma hospedagem gratuita (como Netlify Drop ou GitHub Pages) e abra o link no Safari.</li>
+          <li><b>Crie um atalho.</b> No Chrome: menu ⋮ e "Adicionar à tela inicial". No Safari: botão de compartilhar e "Adicionar à Tela de Início".</li>
+        </ol>
+        <div class="callout"><b>Dica.</b> Para gerar vídeo, use o Chrome (Android ou computador). Ele grava direto em MP4, que WhatsApp e Instagram aceitam.</div>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary><span class="badge">1</span><span class="sec-title">Como navegar<small>O menu de três risquinhos</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <p>Toque nos <b>três risquinhos</b> no canto superior esquerdo para abrir o menu. Ele leva a cada tela:</p>
+        <ul>
+          <li><b>Início:</b> resumo e atalhos.</li>
+          <li><b>Prompt de imagem:</b> monta o texto do render fotorrealista.</li>
+          <li><b>Cenas e vídeo:</b> junta as imagens em um vídeo final e também gera o prompt de vídeo para IA.</li>
+          <li><b>Manual:</b> esta página.</li>
+        </ul>
+        <p>Para fechar o menu, toque no X, fora do menu ou em qualquer item.</p>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary><span class="badge">2</span><span class="sec-title">Criar o prompt de imagem<small>Passo a passo</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <ol class="steps">
+          <li>No menu, toque em <b>Prompt de imagem</b>.</li>
+          <li>Em <b>Imagem de referência</b>, escolha a foto do ambiente (vazio, mobiliado ou desenho técnico).</li>
+          <li>Se quiser trocar a decoração, abra <b>Renovação completa</b> e ative "Remover móveis existentes".</li>
+          <li>Em <b>Parâmetros de staging</b>, escolha função, tipo de cômodo, estilo, arquitetura, atmosfera e foco.</li>
+          <li>Em <b>Clima e iluminação</b>, escolha a hora do dia ou o tempo.</li>
+          <li>Em <b>Personalização de cores</b>, indique a parede, o acabamento e, se quiser, uma cor (nome ou código, como #1E3A8A).</li>
+          <li>Em <b>Cenários de convivência</b>, escolha pessoas ou pet, ou deixe "Nenhum".</li>
+          <li>Toque em <b>Gerar prompt de imagem</b>. Use <b>Copiar</b> ou <b>Baixar .txt</b> e cole o texto na sua ferramenta de IA de imagem, junto com a foto de referência.</li>
+        </ol>
+        <div class="callout"><b>Dica.</b> O número de cada seção fica dourado quando ela tem algo preenchido. Assim você vê o que já respondeu.</div>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary><span class="badge">3</span><span class="sec-title">Montar o vídeo com cenas<small>Passo a passo</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <ol class="steps">
+          <li>No menu, toque em <b>Cenas e vídeo</b>.</li>
+          <li>Em <b>Cenas</b>, toque em <b>Adicionar imagens</b>. Você pode escolher várias de uma vez, por exemplo os renders prontos. Cada imagem vira uma cena, na ordem escolhida.</li>
+          <li>Em cada cena, defina o <b>movimento de câmera</b>, a <b>duração</b>, uma <b>legenda</b> opcional (aparece na parte de baixo do vídeo) e a <b>transição</b> para a próxima cena.</li>
+          <li>Use as setas para <b>mudar a ordem</b>, o ícone de cópia para <b>duplicar</b> e a lixeira para <b>remover</b>.</li>
+          <li>Em <b>Transições</b>, escolha a transição padrão, ajuste a duração e toque em <b>Aplicar em todas as cenas</b> se quiser a mesma entre todas.</li>
+          <li>Em <b>Visual e efeitos</b>, escolha um tratamento de cor e ligue vinheta, grão de filme, barras de cinema ou fade.</li>
+          <li>Em <b>Formato e qualidade</b>, escolha a proporção (9:16 para Stories e Reels, por exemplo).</li>
+          <li>Toque em ▶ para ver a <b>prévia</b>, ou arraste o dedo na <b>linha do tempo</b> para navegar. Os losangos dourados marcam as transições.</li>
+          <li>Logo abaixo da linha do tempo, no cartão <b>Prompt de vídeo para IA externa</b>, escolha o tipo de vídeo e o motor de geração e toque em <b>Gerar prompt de vídeo</b> se quiser um texto pronto para colar em ferramentas como Runway ou Pika — ele já usa as câmeras, durações e transições das suas cenas. Ative "Incluir também o prompt de imagem" se quiser os dois textos juntos.</li>
+          <li>Para gravar o vídeo de verdade aqui mesmo no app, toque em <b>Gerar vídeo final</b>, no fim da página. O app grava em tempo real, então <b>mantenha a tela ligada</b> e não troque de aplicativo até chegar a 100%.</li>
+          <li>Quando o vídeo aparecer, toque em <b>Baixar vídeo</b> ou em <b>Compartilhar</b> para enviar direto pelo WhatsApp, Instagram e outros.</li>
+        </ol>
+        <div class="callout"><b>Limite.</b> O vídeo final pode ter até 2 minutos no total.</div>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary><span class="badge">4</span><span class="sec-title">Movimentos de câmera<small>O que cada um faz</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body"><dl class="gloss" id="glossCam"></dl></div>
+    </details>
+
+    <details class="sec">
+      <summary><span class="badge">5</span><span class="sec-title">Transições<small>O que cada uma faz</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body"><dl class="gloss" id="glossTrans"></dl></div>
+    </details>
+
+    <details class="sec">
+      <summary><span class="badge">6</span><span class="sec-title">Problemas comuns<small>E como resolver</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <ul>
+          <li><b>O vídeo saiu em .webm e o WhatsApp ou o Instagram não aceita.</b> Atualize o Chrome (ele grava em MP4) ou converta o arquivo com um conversor online gratuito.</li>
+          <li><b>A gravação foi cancelada.</b> Ela cancela se a tela sair do primeiro plano. Tente de novo sem trocar de aplicativo.</li>
+          <li><b>O vídeo trava ou falha no celular.</b> Em Formato e qualidade, escolha "Leve (720p)", feche outros aplicativos e use menos cenas por vez.</li>
+          <li><b>Aparecem bordas desfocadas nas laterais.</b> É o enquadramento "Imagem inteira". Troque para "Preencher a tela" se preferir sem bordas.</li>
+          <li><b>A imagem parece cortada.</b> É o "Preencher a tela". Volte para "Imagem inteira" para ver a foto completa.</li>
+          <li><b>Perdi as cenas ao recarregar a página.</b> As imagens não ficam salvas. As opções escolhidas ficam guardadas no aparelho.</li>
+          <li><b>Aparece "passa de 2 minutos".</b> Reduza a duração das cenas ou remova alguma.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</section>
+
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+
+/* =====================================================================
+   Utilidades
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const clamp = (v,a=0,b=1) => Math.min(b,Math.max(a,v));
+const smooth = (a,b,x) => { x = clamp((x-a)/(b-a)); return x*x*(3-2*x); };
+const easeIO = t => 0.5-0.5*Math.cos(Math.PI*t);
+const easeOut = t => 1-Math.pow(1-t,3);
+const easeIO3 = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+const even = n => { n = Math.round(n); return n%2 ? n+1 : n; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtT = t => { t = Math.max(0,Math.floor(t+1e-6)); return Math.floor(t/60)+':'+String(t%60).padStart(2,'0'); };
+const val = id => $(id).value.trim();
+const uid = (() => { let n=0; return () => 'sc'+(++n)+'_'+Date.now().toString(36); })();
+const IMG_EXT = /\.(jpe?g|png|gif|webp|bmp|avif|heic|heif|tiff?)$/i;
+const HEIC_RE = /\.(heic|heif)$/i;
+function looksLikeImage(file){
+  if (file.type && file.type.startsWith('image/')) return true;
+  if (!file.type && IMG_EXT.test(file.name || '')) return true; // MIME ausente (comum em alguns apps/álbuns)
+  return false;
+}
+function isHeic(file){ return (file.type === 'image/heic' || file.type === 'image/heif' || HEIC_RE.test(file.name || '')); }
+
+let toastTimer;
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* =====================================================================
+   Dados: movimentos de câmera e transições
+   ===================================================================== */
+const CAMERAS = [
+  {g:'Básicos', items:['Aproximação (Zoom In)','Afastamento (Zoom Out)','Estático']},
+  {g:'Panorâmicas', items:['Pan Horizontal','Pan Horizontal Reverso','Pan Vertical','Pan Vertical Reverso','Panorâmica Vai e Volta','Varredura em S']},
+  {g:'Cinematográficos', items:['Entrada + Giro pela Cena','Espiral de Entrada','Órbita 360°','Voo de Drone (Revela)','Ken Burns Diagonal','Push-in com Giro','Câmera na Mão (Handheld)']}
+];
+const CAM_DESC = {
+  'Aproximação (Zoom In)':'A câmera se aproxima devagar do centro da cena.',
+  'Afastamento (Zoom Out)':'A câmera se afasta e revela o ambiente inteiro.',
+  'Estático':'Imagem parada, sem movimento.',
+  'Pan Horizontal':'A câmera desliza da esquerda para a direita.',
+  'Pan Horizontal Reverso':'A câmera desliza da direita para a esquerda.',
+  'Pan Vertical':'A câmera desce do topo até a base da imagem.',
+  'Pan Vertical Reverso':'A câmera sobe da base até o topo da imagem.',
+  'Panorâmica Vai e Volta':'A câmera vai até um lado e volta ao ponto de partida.',
+  'Varredura em S':'A câmera desce em curva, oscilando de um lado a outro.',
+  'Entrada + Giro pela Cena':'A câmera entra na cena, gira por todo o ambiente e se acomoda no final.',
+  'Espiral de Entrada':'A câmera gira em espiral e se fecha no centro da cena.',
+  'Órbita 360°':'A câmera contorna a cena em um círculo contínuo.',
+  'Voo de Drone (Revela)':'A câmera sobe como um drone e revela o ambiente por inteiro.',
+  'Ken Burns Diagonal':'Aproximação com deslocamento diagonal, no estilo documentário.',
+  'Push-in com Giro':'Aproximação com leve rotação, para um efeito dramático.',
+  'Câmera na Mão (Handheld)':'Tremor sutil de câmera na mão, com aproximação lenta.'
+};
+const TRANS = [
+  ['Corte Seco (sem transição)','Troca direta entre as cenas, sem efeito.'],
+  ['Dissolver (Crossfade)','Uma cena se funde suavemente na outra.'],
+  ['Fade Suave (Preto)','A cena escurece até o preto e a próxima surge.'],
+  ['Fade Branco','A cena clareia até o branco e a próxima surge.'],
+  ['Flash Dourado','Um clarão dourado cobre a tela e revela a próxima cena.'],
+  ['Slide Lateral','A próxima cena entra pela lateral empurrando a atual.'],
+  ['Slide Vertical','A próxima cena entra de baixo empurrando a atual.'],
+  ['Wipe Horizontal','Uma varredura da esquerda para a direita revela a próxima cena.'],
+  ['Wipe Vertical','Uma varredura de cima para baixo revela a próxima cena.'],
+  ['Cortina Central','A próxima cena se abre do centro para as bordas.'],
+  ['Zoom Dramático (Entrada Rápida)','A cena atual se aproxima rápido e a próxima entra com impacto.'],
+  ['Zoom Saída Suave','Um zoom suave leva de uma cena à outra.'],
+  ['Rotação Suave','A imagem gira levemente enquanto uma cena se funde na outra.'],
+  ['Giro Espiral','A cena gira e se aproxima em espiral até a próxima aparecer.'],
+  ['Vinheta Circular (Iris)','A próxima cena se abre em um círculo a partir do centro.'],
+  ['Desfoque de Entrada (Blur In)','A cena atual desfoca e a próxima surge nítida.']
+];
+const TRANS_DESC = Object.fromEntries(TRANS);
+const CAM_OPTS = CAMERAS.map(g => `<optgroup label="${g.g}">${g.items.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}</optgroup>`).join('');
+const TRANS_OPTS = TRANS.map(([n]) => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+const isCut = name => name.startsWith('Corte Seco');
+
+/* =====================================================================
+   Estado
+   ===================================================================== */
+const S = {
+  formato:'Vertical 9:16 (Stories/Reels/TikTok)', qualidade:'alta', fit:'contain',
+  defCam:'Aproximação (Zoom In)', defDur:6, defTrans:'Dissolver (Crossfade)', transDur:0.9,
+  look:'Nenhum', vinheta:false, grao:false, barras:false, fades:true
+};
+let scenes = [];          // {id, src(canvas), thumb, name, mov, dur, trans, cap}
+let refFile = null;
+let curT = 0, playing = false, rafId = 0, recording = false, recAbort = false, abortFn = null;
+let TLc = null;
+
+function invalidateTL(){ TLc = null; }
+function getTL(){
+  if (TLc) return TLc;
+  let acc = 0;
+  const items = scenes.map(sc => { const it = {sc, start:acc, end:acc+sc.dur, dur:sc.dur}; acc += sc.dur; return it; });
+  const bounds = [];
+  for (let i=0; i<items.length-1; i++){
+    const type = items[i].sc.trans;
+    const d = isCut(type) ? 0 : Math.min(S.transDur, items[i].dur*0.6, items[i+1].dur*0.6);
+    bounds.push({i, t:items[i].end, d, type});
+  }
+  TLc = {items, bounds, total:acc};
+  return TLc;
+}
+
+/* =====================================================================
+   Navegação e menu lateral
+   ===================================================================== */
+const PAGES = ['home','imagem','studio','manual'];
+const drawer = $('drawer'), scrim = $('scrim'), menuBtn = $('menuBtn');
+function openDrawer(){
+  drawer.classList.add('open'); scrim.classList.add('open');
+  drawer.removeAttribute('inert'); drawer.setAttribute('aria-hidden','false');
+  menuBtn.setAttribute('aria-expanded','true'); menuBtn.setAttribute('aria-label','Fechar menu');
+  const act = drawer.querySelector('.nav-item.active') || drawer.querySelector('.nav-item');
+  setTimeout(() => act && act.focus({preventScroll:true}), 120);
+}
+function closeDrawer(focusBtn){
+  drawer.classList.remove('open'); scrim.classList.remove('open');
+  drawer.setAttribute('inert',''); drawer.setAttribute('aria-hidden','true');
+  menuBtn.setAttribute('aria-expanded','false'); menuBtn.setAttribute('aria-label','Abrir menu');
+  if (focusBtn) menuBtn.focus({preventScroll:true});
+}
+drawer.setAttribute('inert','');
+menuBtn.addEventListener('click', () => drawer.classList.contains('open') ? closeDrawer() : openDrawer());
+$('drawerClose').addEventListener('click', () => closeDrawer(true));
+scrim.addEventListener('click', () => closeDrawer());
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawer.classList.contains('open')) closeDrawer(true); });
+
+function showPage(id){
+  if (!PAGES.includes(id)) id = 'home';
+  PAGES.forEach(p => $('page-'+p).classList.toggle('active', p === id));
+  drawer.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.go === id));
+  $('pageTitle').textContent = $('page-'+id).dataset.title;
+  $('backBtn').hidden = (id === 'home');
+  document.body.classList.toggle('subpage', id !== 'home');
+  closeDrawer();
+  window.scrollTo(0,0);
+  if (id === 'studio'){ applyPreviewSize(); renderScenes(); renderTimeline(); drawAt(curT); }
+}
+function go(id){
+  if (location.hash.slice(1) !== id) { try{ location.hash = id; }catch(e){ showPage(id); } }
+  else showPage(id);
+}
+window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
+$('backBtn').addEventListener('click', () => go('home'));
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-go]');
+  if (b) go(b.dataset.go);
+});
+
+/* =====================================================================
+   Persistência local (só opções; as imagens não são guardadas)
+   ===================================================================== */
+const KEY = 'atelierRenderV2';
+const FORM_IDS = ['funcao','tipoComodo','estilo','arquitetura','atmosfera','foco','clima','parede','aplicacao','corEspecifica','lifestyle','tipoVideo','motor'];
+const FORM_CHECK = ['esvaziar','incluirImg'];
+function save(){
+  try{
+    const o = {S, form:{}};
+    FORM_IDS.forEach(id => o.form[id] = $(id).value);
+    FORM_CHECK.forEach(id => o.form[id] = $(id).checked);
+    localStorage.setItem(KEY, JSON.stringify(o));
+  }catch(e){}
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY); if (!raw) return;
+    const o = JSON.parse(raw);
+    if (o.S) Object.keys(S).forEach(k => { if (o.S[k] !== undefined) S[k] = o.S[k]; });
+    if (o.form){
+      if (o.form.funcao){ $('funcao').value = o.form.funcao; fillComodos(); }
+      FORM_IDS.forEach(id => { if (o.form[id] !== undefined) $(id).value = o.form[id]; });
+      FORM_CHECK.forEach(id => { if (o.form[id] !== undefined) $(id).checked = !!o.form[id]; });
+    }
+  }catch(e){}
+}
+
+/* =====================================================================
+   Prompt de imagem: campos dependentes e "seção preenchida"
+   ===================================================================== */
+const COMODOS = {
+  "Residencial": {
+    "Áreas Integradas": ["Sala e Cozinha Integradas","Sala de Estar e Jantar Integradas","Cozinha Gourmet Integrada c/ Sala","Área Gourmet Integrada c/ Piscina","Home Office Integrado","Closet Integrado"],
+    "Ambientes Individuais": ["Quarto de Casal","Quarto Infantil","Sala de Estar","Sala de Jantar","Cozinha","Banheiro","Varanda / Sacada","Home Office"],
+    "Áreas Externas": ["Jardim","Área de Piscina","Churrasqueira / Área Gourmet"]
+  },
+  "Comercial": { "Espaços Comerciais": ["Loja / Vitrine","Showroom","Restaurante","Café / Cafeteria","Salão de Beleza","Academia"] },
+  "Escritório": { "Ambientes Corporativos": ["Sala de Reunião","Recepção","Estação de Trabalho Aberta","Sala Executiva","Copa / Área de Descanso"] },
+  "Hotelaria": { "Ambientes de Hospedagem": ["Quarto Standard","Suíte","Lobby","Área de Piscina","Spa","Restaurante do Hotel"] }
+};
+function fillComodos(){
+  const sel = $('tipoComodo'), grupos = COMODOS[$('funcao').value];
+  sel.innerHTML = '';
+  if (!grupos){ sel.innerHTML = '<option value="">Selecione a função primeiro</option>'; return; }
+  sel.innerHTML = '<option value="">Selecione o tipo</option>';
+  Object.entries(grupos).forEach(([g, itens]) => {
+    const og = document.createElement('optgroup'); og.label = g;
+    itens.forEach(i => { const o = document.createElement('option'); o.value = i; o.textContent = i; og.appendChild(o); });
+    sel.appendChild(og);
+  });
+}
+$('funcao').addEventListener('change', fillComodos);
+
+function updateTrack(det){
+  let filled = false;
+  det.querySelectorAll('select,input[type=text],input[type=checkbox]').forEach(el => {
+    if (el.type === 'checkbox') { if (el.checked) filled = true; }
+    else if (el.value && el.value !== 'Nenhum') filled = true;
+  });
+  if (det.querySelector('#uploadArea') && refFile) filled = true;
+  det.classList.toggle('filled', filled);
+}
+function trackAll(){ document.querySelectorAll('details[data-track]').forEach(updateTrack); }
+['page-imagem','page-studio'].forEach(id => {
+  const pg = $(id);
+  pg.addEventListener('change', () => { trackAll(); save(); });
+  pg.addEventListener('input', e => { if (e.target.type === 'text') { trackAll(); save(); } });
+});
+
+/* Imagem de referência */
+const uploadArea = $('uploadArea'), fileInput = $('fileInput'), preview = $('preview');
+let previewURL = null;
+uploadArea.addEventListener('click', () => fileInput.click());
+uploadArea.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); fileInput.click(); } });
+uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.borderColor = 'var(--gold)'; });
+uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; });
+uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.style.borderColor = ''; if (e.dataTransfer.files[0]) handleRef(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleRef(fileInput.files[0]); });
+function handleRef(file){
+  if (isHeic(file)){ toast('Essa foto está no formato HEIC (comum no iPhone) e este navegador não consegue abri-la. Exporte como JPEG/PNG ou tire a foto em "Mais compatível".'); return; }
+  if (!looksLikeImage(file)){ toast('Escolha um arquivo de imagem (JPEG, PNG ou WEBP).'); return; }
+  refFile = file;
+  if (previewURL) URL.revokeObjectURL(previewURL);
+  previewURL = URL.createObjectURL(file);
+  preview.src = previewURL; preview.style.display = 'block';
+  $('fileName').textContent = 'Arquivo: ' + file.name;
+  $('useRefBtn').style.display = 'flex';
+  trackAll();
+}
+$('useRefBtn').addEventListener('click', async () => {
+  if (!refFile) return;
+  await addFiles([refFile]);
+  toast('Imagem adicionada como cena. Veja em Cenas e vídeo.');
+});
+
+/* =====================================================================
+   Câmera virtual: cada movimento devolve zoom (s), deslocamento (dx,dy
+   entre -1 e 1, relativo à sobra da imagem) e rotação (r, em radianos)
+   ===================================================================== */
+function getCamera(mov, t, ts){
+  const e = easeIO(t);
+  let s = 1, dx = 0, dy = 0, r = 0;
+  switch(mov){
+    case 'Aproximação (Zoom In)': s = 1 + 0.2*e; break;
+    case 'Afastamento (Zoom Out)': s = 1.2 - 0.2*e; break;
+    case 'Pan Horizontal': s = 1.16; dx = 1 - 2*e; break;
+    case 'Pan Horizontal Reverso': s = 1.16; dx = -1 + 2*e; break;
+    case 'Pan Vertical': s = 1.16; dy = 1 - 2*e; break;
+    case 'Pan Vertical Reverso': s = 1.16; dy = -1 + 2*e; break;
+    case 'Panorâmica Vai e Volta': s = 1.16; dx = Math.cos(2*Math.PI*t); break;
+    case 'Varredura em S': s = 1.2; dx = 0.9*Math.sin(2*Math.PI*t); dy = 0.75 - 1.5*e; break;
+    case 'Órbita 360°': {
+      const a = 2*Math.PI*t;
+      s = 1.18 + 0.04*Math.sin(a); dx = 0.75*Math.sin(a); dy = 0.45*Math.cos(a); r = 0.02*Math.sin(a);
+      break;
+    }
+    case 'Entrada + Giro pela Cena': {
+      const T1 = 0.2;
+      if (t < T1){                       // 1) entra na cena
+        const u = easeOut(t/T1);
+        s = 1 + 0.55*u; dy = -0.792*u; r = -0.06*(1-u);
+      } else {                           // 2) gira por todo o ambiente e se acomoda
+        const u = (t-T1)/(1-T1), th = -Math.PI/2 + 2*Math.PI*u;
+        const rho = 0.88*(1 - smooth(0.8,1,u));
+        s = 1.55 - 0.4*smooth(0.72,1,u);
+        dx = rho*Math.cos(th); dy = rho*Math.sin(th)*0.9; r = 0.05*Math.sin(2*Math.PI*u);
+      }
+      break;
+    }
+    case 'Espiral de Entrada': {
+      const u = easeIO(t), th = -Math.PI/2 + 2*Math.PI*1.6*u, rho = 0.95*(1-u);
+      s = 1.65 - 0.5*u; dx = rho*Math.cos(th); dy = rho*Math.sin(th)*0.9; r = 0.1*(1-u)*Math.sin(th);
+      break;
+    }
+    case 'Voo de Drone (Revela)': s = 1.4 - 0.38*e; dy = -1 + 1.15*e; r = 0.05*(1-e); break;
+    case 'Ken Burns Diagonal': s = 1.05 + 0.2*e; dx = 0.8 - 1.6*e; dy = 0.6 - 1.2*e; break;
+    case 'Push-in com Giro': s = 1.12 + 0.25*e; r = -0.07 + 0.14*e; break;
+    case 'Câmera na Mão (Handheld)':
+      s = 1.09 + 0.04*e;
+      dx = 0.3*Math.sin(ts*2.3) + 0.2*Math.sin(ts*5.1+1);
+      dy = 0.3*Math.sin(ts*2.9+2) + 0.2*Math.sin(ts*4.3);
+      r = 0.004*Math.sin(ts*1.7);
+      break;
+    default: s = 1; // Estático
+  }
+  return {s, dx, dy, r};
+}
+
+/* =====================================================================
+   Renderização do vídeo (canvas)
+   ===================================================================== */
+const stage = $('stage'), sctx = stage.getContext('2d');
+const FORMATS = [['9:16',1080,1920],['4:5',1080,1350],['1:1',1080,1080],['4:3',1440,1080],['2:3',1000,1500],['16:9',1920,1080]];
+function baseDims(){
+  const f = FORMATS.find(f => S.formato.includes(f[0])) || FORMATS[5];
+  let W = f[1], H = f[2];
+  if (S.qualidade === 'leve'){ W *= 2/3; H *= 2/3; }
+  return [even(W), even(H)];
+}
+function previewDims(){ const [W,H] = baseDims(); return [even(W*0.55), even(H*0.55)]; }
+function setStageSize(W,H){ if (stage.width !== W || stage.height !== H){ stage.width = W; stage.height = H; } }
+function applyPreviewSize(){ if (!recording){ const [W,H] = previewDims(); setStageSize(W,H); } }
+
+const mk = (W,H) => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+let bufA = null, bufB = null, tmpC = null;
+function ensureBufs(W,H){
+  if (!bufA || bufA.width !== W || bufA.height !== H){ bufA = mk(W,H); bufB = mk(W,H); tmpC = mk(W,H); }
+}
+
+// Fundo desfocado, calculado uma vez por cena e tamanho (sem depender de ctx.filter)
+function getBg(sc, W, H){
+  if (sc._bg && sc._bg.w === W && sc._bg.h === H) return sc._bg.c;
+  const iw = sc.src.width, ih = sc.src.height, k = Math.max(W/iw, H/ih)*1.1;
+  const dw = iw*k, dh = ih*k, x = (W-dw)/2, y = (H-dh)/2;
+  const sw = Math.max(8, Math.round(W/48)), sh = Math.max(8, Math.round(H/48));
+  const c1 = mk(sw,sh), x1 = c1.getContext('2d'); x1.imageSmoothingQuality = 'high';
+  x1.drawImage(sc.src, x*sw/W, y*sh/H, dw*sw/W, dh*sh/H);
+  const mw = Math.max(16, Math.round(W/8)), mh = Math.max(16, Math.round(H/8));
+  const c2 = mk(mw,mh), x2 = c2.getContext('2d'); x2.imageSmoothingQuality = 'high';
+  x2.drawImage(c1, 0, 0, mw, mh);
+  const c = mk(W,H), xc = c.getContext('2d'); xc.imageSmoothingQuality = 'high';
+  xc.drawImage(c2, 0, 0, W, H);
+  xc.fillStyle = 'rgba(0,0,0,.5)'; xc.fillRect(0,0,W,H);
+  sc._bg = {w:W, h:H, c};
+  return c;
+}
+
+function paintScene(ctx, it, t, W, H){
+  const sc = it.sc;
+  const localT = clamp((t-it.start)/it.dur), ts = clamp(t-it.start, 0, it.dur);
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  ctx.drawImage(getBg(sc,W,H), 0, 0);
+  const cam = getCamera(sc.mov, localT, ts);
+  const iw = sc.src.width, ih = sc.src.height;
+  const base = S.fit === 'cover' ? Math.max(W/iw, H/ih) : Math.min(W/iw, H/ih);
+  const k = base*cam.s, dw = iw*k, dh = ih*k;
+  const mx = Math.max((dw-W)/2, W*0.04), my = Math.max((dh-H)/2, H*0.04);
+  ctx.save();
+  ctx.translate(W/2 + cam.dx*mx, H/2 + cam.dy*my);
+  if (cam.r) ctx.rotate(cam.r);
+  ctx.drawImage(sc.src, -dw/2, -dh/2, dw, dh);
+  ctx.restore();
+}
+
+// Mistura entre duas cenas já renderizadas (a, b) segundo a transição escolhida
+function blend(ctx, a, b, type, p, W, H){
+  const cx = W/2, cy = H/2;
+  const drawBuf = (buf, o) => {
+    o = o || {};
+    ctx.save();
+    ctx.globalAlpha = o.alpha === undefined ? 1 : o.alpha;
+    ctx.translate(cx + (o.x||0), cy + (o.y||0));
+    if (o.rot) ctx.rotate(o.rot);
+    const s = o.scale || 1; ctx.scale(s,s);
+    ctx.drawImage(buf, -cx, -cy);
+    ctx.restore();
+  };
+  const cover = (color, alpha) => { ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.fillRect(0,0,W,H); ctx.restore(); };
+  const dip = color => {
+    if (p < 0.5){ drawBuf(a); cover(color, p/0.5); }
+    else { drawBuf(b); cover(color, 1-(p-0.5)/0.5); }
+  };
+  const edge = (x,y,w,h) => { if (p > 0.02 && p < 0.98){ ctx.save(); ctx.fillStyle = '#F7D774'; ctx.fillRect(x,y,w,h); ctx.restore(); } };
+  const blurDraw = (buf, amt, alpha) => {
+    ctx.save(); ctx.globalAlpha = alpha;
+    if (amt < 0.03) ctx.drawImage(buf,0,0);
+    else {
+      const k = 1/(1+amt*16), tw = Math.max(8,Math.round(W*k)), th = Math.max(8,Math.round(H*k));
+      const tc = tmpC.getContext('2d'); tc.imageSmoothingQuality = 'high';
+      tc.clearRect(0,0,tw+2,th+2); tc.drawImage(buf, 0, 0, tw, th);
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(tmpC, 0, 0, tw, th, 0, 0, W, H);
+    }
+    ctx.restore();
+  };
+  switch(type){
+    case 'Dissolver (Crossfade)': drawBuf(a); drawBuf(b,{alpha:p}); break;
+    case 'Fade Suave (Preto)': dip('#000'); break;
+    case 'Fade Branco': dip('#fff'); break;
+    case 'Flash Dourado': dip('#F2C94C'); break;
+    case 'Slide Lateral': drawBuf(a,{x:-p*W}); drawBuf(b,{x:(1-p)*W}); break;
+    case 'Slide Vertical': drawBuf(a,{y:-p*H}); drawBuf(b,{y:(1-p)*H}); break;
+    case 'Wipe Horizontal':
+      drawBuf(a); ctx.save(); ctx.beginPath(); ctx.rect(0,0,p*W,H); ctx.clip(); drawBuf(b); ctx.restore();
+      edge(p*W-2,0,4,H); break;
+    case 'Wipe Vertical':
+      drawBuf(a); ctx.save(); ctx.beginPath(); ctx.rect(0,0,W,p*H); ctx.clip(); drawBuf(b); ctx.restore();
+      edge(0,p*H-2,W,4); break;
+    case 'Cortina Central':
+      drawBuf(a); ctx.save(); ctx.beginPath(); ctx.rect(cx-p*cx,0,p*W,H); ctx.clip(); drawBuf(b); ctx.restore();
+      edge(cx-p*cx-2,0,4,H); edge(cx+p*cx-2,0,4,H); break;
+    case 'Zoom Dramático (Entrada Rápida)':
+      drawBuf(a,{scale:1+p*0.6}); drawBuf(b,{scale:1.6-p*0.6, alpha:p}); break;
+    case 'Zoom Saída Suave':
+      drawBuf(a,{scale:1+p*0.15}); drawBuf(b,{scale:1.15-p*0.15, alpha:p}); break;
+    case 'Rotação Suave':
+      ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
+      drawBuf(a,{rot:-0.18*p, scale:1+0.4*p}); drawBuf(b,{rot:0.18*(1-p), scale:1.4-0.4*p, alpha:p}); break;
+    case 'Giro Espiral':
+      ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
+      drawBuf(a,{rot:p*0.9, scale:1+p*1.2}); drawBuf(b,{rot:-(1-p)*0.9, scale:1+(1-p)*1.2, alpha:p}); break;
+    case 'Vinheta Circular (Iris)': {
+      const R = p*Math.hypot(W,H)/2;
+      drawBuf(a); ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.clip(); drawBuf(b); ctx.restore();
+      if (p > 0.02 && p < 0.98){ ctx.save(); ctx.strokeStyle = '#F7D774'; ctx.lineWidth = Math.max(3,W*0.004); ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.stroke(); ctx.restore(); }
+      break;
+    }
+    case 'Desfoque de Entrada (Blur In)': blurDraw(a,p,1); blurDraw(b,1-p,p); break;
+    default: drawBuf(p < 0.5 ? a : b);
+  }
+}
+
+/* Tratamentos de cor e efeitos aplicados sobre o quadro pronto */
+function fillBlend(ctx,W,H,color,mode,alpha){
+  ctx.save(); ctx.globalCompositeOperation = mode; ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.fillRect(0,0,W,H); ctx.restore();
+}
+function applyLook(ctx,W,H){
+  switch(S.look){
+    case 'Dourado Quente': fillBlend(ctx,W,H,'#f2b544','soft-light',0.6); fillBlend(ctx,W,H,'#ffd27a','overlay',0.12); break;
+    case 'Cinematográfico': {
+      const g = ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,'#ff9a3c'); g.addColorStop(1,'#1f6f8b');
+      fillBlend(ctx,W,H,g,'soft-light',0.55); break;
+    }
+    case 'Preto e Branco': fillBlend(ctx,W,H,'#808080','saturation',1); break;
+    case 'Vintage': fillBlend(ctx,W,H,'#808080','saturation',0.4); fillBlend(ctx,W,H,'#d9a45b','soft-light',0.5); break;
+    case 'Frio': fillBlend(ctx,W,H,'#5b8fd9','soft-light',0.5); break;
+    case 'Vívido': fillBlend(ctx,W,H,'#ff2a2a','saturation',0.28); break;
+  }
+}
+const noiseTile = (() => {
+  const c = mk(256,256), x = c.getContext('2d'), id = x.createImageData(256,256);
+  for (let i=0; i<id.data.length; i+=4){ const v = Math.random()*255; id.data[i] = id.data[i+1] = id.data[i+2] = v; id.data[i+3] = 255; }
+  x.putImageData(id,0,0); return c;
+})();
+let grainPattern = null;
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath(); ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+function wrapLines(ctx,text,maxW){
+  const words = text.split(/\s+/), lines = []; let cur = '';
+  for (const w of words){
+    const test = cur ? cur+' '+w : w;
+    if (ctx.measureText(test).width > maxW && cur){ lines.push(cur); cur = w; } else cur = test;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+function drawCaption(ctx,it,t,W,H,barH){
+  const txt = (it.sc.cap || '').trim(); if (!txt) return;
+  const a = easeOut(clamp(Math.min((t-it.start)/0.6, (it.end-t)/0.6)));
+  if (a <= 0) return;
+  const fs = Math.round(Math.min(W,H)*0.052);
+  ctx.save();
+  ctx.font = `500 ${fs}px Jost, "Segoe UI", system-ui, sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const maxW = W*0.8, lines = wrapLines(ctx,txt,maxW).slice(0,3);
+  const lh = fs*1.25, padX = fs*0.9, padY = fs*0.6;
+  const textW = Math.max(...lines.map(l => ctx.measureText(l).width));
+  const boxW = Math.min(maxW+padX*2, textW+padX*2), boxH = lines.length*lh + padY*2;
+  const cx = W/2, y0 = H - barH - H*0.075 - boxH + (1-a)*fs*0.5;
+  ctx.globalAlpha = a;
+  roundRect(ctx, cx-boxW/2, y0, boxW, boxH, fs*0.35);
+  ctx.fillStyle = 'rgba(0,0,0,.66)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(227,179,65,.9)'; ctx.lineWidth = Math.max(2,fs*0.05); ctx.stroke();
+  ctx.fillStyle = '#F7D774';
+  lines.forEach((l,i) => ctx.fillText(l, cx, y0 + padY + lh*(i+0.5)));
+  ctx.restore();
+}
+
+function post(ctx,tl,idx,t,W,H,fadesOn){
+  applyLook(ctx,W,H);
+  if (S.vinheta){
+    const g = ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3, W/2,H/2,Math.hypot(W,H)*0.55);
+    g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.62)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  }
+  if (S.grao){
+    if (!grainPattern) grainPattern = ctx.createPattern(noiseTile,'repeat');
+    const rx = Math.random()*256, ry = Math.random()*256;
+    ctx.save(); ctx.globalAlpha = 0.11; ctx.globalCompositeOperation = 'overlay';
+    ctx.translate(-rx,-ry); ctx.fillStyle = grainPattern; ctx.fillRect(0,0,W+256,H+256); ctx.restore();
+  }
+  let barH = 0;
+  if (S.barras){
+    barH = W/H > 1.3 ? Math.min(Math.max(0,(H-W/2.39)/2), H*0.14) : H*0.05;
+    ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,barH); ctx.fillRect(0,H-barH,W,barH);
+  }
+  const it = tl.items[idx]; if (it) drawCaption(ctx,it,t,W,H,barH);
+  if (S.fades && fadesOn){
+    const al = 1 - clamp(Math.min(t/0.8, (tl.total-t)/0.8));
+    if (al > 0){ ctx.save(); ctx.globalAlpha = al; ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H); ctx.restore(); }
+  }
+}
+
+function drawPlaceholder(ctx,W,H){
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
+  const m = Math.min(W,H)*0.05;
+  ctx.strokeStyle = 'rgba(227,179,65,.55)'; ctx.lineWidth = 2; ctx.strokeRect(m,m,W-2*m,H-2*m);
+  const fs = Math.round(Math.min(W,H)*0.05);
+  ctx.fillStyle = '#B5A98A'; ctx.font = `400 ${fs}px Jost, "Segoe UI", system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  wrapLines(ctx,'Adicione imagens para ver a prévia do vídeo aqui.',W*0.7).forEach((l,i,arr) => ctx.fillText(l, W/2, H/2 + (i-(arr.length-1)/2)*fs*1.4));
+}
+
+function renderFrame(ctx,tl,t,W,H,fadesOn){
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  if (!tl.items.length){ drawPlaceholder(ctx,W,H); return; }
+  t = clamp(t,0,tl.total);
+  let idx = tl.items.findIndex(it => t >= it.start && t < it.end);
+  if (idx < 0) idx = tl.items.length-1;
+  let tr = null;
+  for (const b of tl.bounds){ if (b.d > 0 && t >= b.t-b.d/2 && t <= b.t+b.d/2){ tr = b; break; } }
+  if (tr){
+    ensureBufs(W,H);
+    const A = tl.items[tr.i], B = tl.items[tr.i+1];
+    paintScene(bufA.getContext('2d'), A, t, W, H);
+    paintScene(bufB.getContext('2d'), B, t, W, H);
+    const p = easeIO3(clamp((t-(tr.t-tr.d/2))/tr.d));
+    ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
+    blend(ctx, bufA, bufB, tr.type, p, W, H);
+    idx = t < tr.t ? tr.i : tr.i+1;
+  } else {
+    paintScene(ctx, tl.items[idx], t, W, H);
+  }
+  post(ctx,tl,idx,t,W,H,fadesOn);
+}
+
+/* =====================================================================
+   Prévia, linha do tempo e reprodução
+   ===================================================================== */
+function drawAt(t){
+  const tl = getTL();
+  renderFrame(sctx, tl, t, stage.width, stage.height, false);
+  updatePlayhead(t);
+}
+let stillQueued = false;
+function renderStill(){
+  if (stillQueued) return; stillQueued = true;
+  requestAnimationFrame(() => { stillQueued = false; if (!playing && !recording) drawAt(curT); });
+}
+function updatePlayhead(t){
+  const tl = getTL(), ph = $('playhead');
+  if (ph && tl.total) ph.style.left = (clamp(t/tl.total)*100) + '%';
+  $('timeNow').textContent = fmtT(t);
+}
+function renderTimeline(){
+  const tl = getTL(), strip = $('tlStrip');
+  strip.innerHTML = '';
+  if (!tl.items.length){
+    strip.innerHTML = '<div class="empty">A linha do tempo aparece quando você adicionar cenas.</div>';
+    $('timeTotal').textContent = '0:00'; $('timeNow').textContent = '0:00'; return;
+  }
+  tl.items.forEach((it,i) => {
+    const d = document.createElement('div'); d.className = 'seg';
+    d.style.flex = it.dur + ' 1 0'; d.style.backgroundImage = 'url("' + it.sc.thumb + '")';
+    d.innerHTML = '<span>' + (i+1) + '</span>'; strip.appendChild(d);
+  });
+  tl.bounds.forEach(b => {
+    const m = document.createElement('div'); m.className = 'tmark' + (b.d === 0 ? ' cut' : '');
+    m.style.left = (b.t/tl.total*100) + '%'; strip.appendChild(m);
+  });
+  const ph = document.createElement('div'); ph.className = 'playhead'; ph.id = 'playhead'; strip.appendChild(ph);
+  $('timeTotal').textContent = fmtT(Math.round(tl.total));
+  updatePlayhead(curT);
+}
+let scrubbing = false;
+const strip = $('tlStrip');
+function scrubTo(e){
+  const tl = getTL(); if (!tl.items.length) return;
+  const r = strip.getBoundingClientRect();
+  curT = clamp((e.clientX-r.left)/r.width)*tl.total;
+  drawAt(curT);
+}
+strip.addEventListener('pointerdown', e => { if (recording) return; stopPlayback(); scrubbing = true; try{ strip.setPointerCapture(e.pointerId); }catch(_){} scrubTo(e); });
+strip.addEventListener('pointermove', e => { if (scrubbing) scrubTo(e); });
+['pointerup','pointercancel'].forEach(n => strip.addEventListener(n, () => { scrubbing = false; }));
+
+function setPlayIcon(p){ $('playIcon').firstElementChild.setAttribute('href', p ? '#i-pause' : '#i-play'); $('playBtn').setAttribute('aria-label', p ? 'Pausar prévia' : 'Reproduzir prévia'); }
+async function loadFonts(){
+  try{ await Promise.race([document.fonts.load('500 40px Jost'), new Promise(r => setTimeout(r,1500))]); }catch(e){}
+}
+function startPlayback(){
+  if (recording) return;
+  let tl = getTL();
+  if (!tl.items.length){ toast('Adicione ao menos uma cena para ver a prévia.'); return; }
+  if (curT >= tl.total-0.05) curT = 0;
+  playing = true; setPlayIcon(true);
+  const base = performance.now() - curT*1000;
+  const loop = () => {
+    if (!playing) return;
+    tl = getTL();
+    const t = (performance.now()-base)/1000;
+    if (t >= tl.total){ curT = tl.total; drawAt(curT); stopPlayback(); return; }
+    curT = t; drawAt(t); rafId = requestAnimationFrame(loop);
+  };
+  loadFonts(); rafId = requestAnimationFrame(loop);
+}
+function stopPlayback(){ playing = false; cancelAnimationFrame(rafId); setPlayIcon(false); }
+$('playBtn').addEventListener('click', () => playing ? stopPlayback() : startPlayback());
+
+/* =====================================================================
+   Cenas: adicionar, editar, ordenar
+   ===================================================================== */
+async function loadImageFile(file){
+  const url = URL.createObjectURL(file);
+  try{
+    const img = await Promise.race([
+      new Promise((res,rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('decode')); i.src = url; }),
+      new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 12000))
+    ]);
+    if (!img.naturalWidth || !img.naturalHeight) throw new Error('empty');
+    const k = Math.min(1, 2000/Math.max(img.naturalWidth, img.naturalHeight));
+    const c = mk(Math.max(1,Math.round(img.naturalWidth*k)), Math.max(1,Math.round(img.naturalHeight*k)));
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    const tk = 220/Math.max(c.width,c.height), t = mk(Math.max(1,Math.round(c.width*tk)), Math.max(1,Math.round(c.height*tk)));
+    t.getContext('2d').drawImage(c,0,0,t.width,t.height);
+    return {canvas:c, thumb:t.toDataURL('image/jpeg',0.72)};
+  } finally { URL.revokeObjectURL(url); }
+}
+async function addFiles(files){
+  let added = 0, heic = 0, invalid = 0, failed = 0;
+  for (const f of files){
+    if (isHeic(f)){ heic++; continue; }
+    if (!looksLikeImage(f)){ invalid++; continue; }
+    try{
+      const {canvas, thumb} = await loadImageFile(f);
+      scenes.push({id:uid(), src:canvas, thumb, name:f.name, mov:S.defCam, dur:S.defDur, trans:S.defTrans, cap:''});
+      added++;
+    }catch(e){ failed++; }
+  }
+  if (added){ renderScenes(); sceneChanged(); }
+  if (heic) toast(heic===1 ? 'Uma foto está em HEIC (formato do iPhone) e não pôde ser aberta. Exporte como JPEG/PNG e tente de novo.' : heic+' fotos estão em HEIC (formato do iPhone) e não puderam ser abertas. Exporte como JPEG/PNG e tente de novo.');
+  else if (failed && !added) toast(failed===1 ? 'Não consegui abrir essa imagem. Tente outro arquivo.' : 'Não consegui abrir '+failed+' imagens. Tente outros arquivos.');
+  else if (invalid && !added) toast('Escolha arquivos de imagem (JPEG, PNG ou WEBP).');
+}
+$('addScenesBtn').addEventListener('click', () => $('sceneFiles').click());
+$('sceneFiles').addEventListener('change', async e => {
+  const fl = Array.from(e.target.files); e.target.value = '';
+  if (!fl.length) return;
+  try{ await addFiles(fl); }
+  catch(err){ toast('Algo deu errado ao adicionar as imagens. Tente novamente.'); }
+});
+
+function sceneHTML(sc,i){
+  const last = i === scenes.length-1;
+  return `
+  <article class="scene" data-id="${sc.id}" aria-label="Cena ${i+1}">
+    <div class="scene-head">
+      <img src="${sc.thumb}" alt="">
+      <div class="scene-title"><b>Cena ${i+1}</b><small>${esc(sc.name || '')}</small></div>
+      <div class="scene-tools">
+        <button class="ibtn" data-act="up" type="button" aria-label="Mover cena ${i+1} para cima" ${i===0?'disabled':''}><svg class="ic"><use href="#i-up"/></svg></button>
+        <button class="ibtn" data-act="down" type="button" aria-label="Mover cena ${i+1} para baixo" ${last?'disabled':''}><svg class="ic"><use href="#i-down"/></svg></button>
+        <button class="ibtn" data-act="dup" type="button" aria-label="Duplicar cena ${i+1}"><svg class="ic"><use href="#i-copy"/></svg></button>
+        <button class="ibtn danger" data-act="del" type="button" aria-label="Remover cena ${i+1}"><svg class="ic"><use href="#i-trash"/></svg></button>
+      </div>
+    </div>
+    <label class="field"><span class="lbl">Movimento de câmera</span>
+      <select class="s-mov">${CAM_OPTS}</select>
+      <span class="hint s-mov-hint"></span>
+    </label>
+    <label class="field"><span class="lbl">Duração (segundos)</span>
+      <div class="stepper"><button type="button" data-act="dm" aria-label="Diminuir duração">−</button><input type="number" class="s-dur" min="1" max="60" step="1" inputmode="numeric" value="${sc.dur}"><button type="button" data-act="dp" aria-label="Aumentar duração">+</button></div>
+    </label>
+    <label class="field"><span class="lbl">Legenda (opcional)</span>
+      <input type="text" class="s-cap" maxlength="70" placeholder="Ex.: Sala de estar" value="${esc(sc.cap)}">
+    </label>
+    ${last
+      ? `<p class="scene-end">Última cena: o vídeo termina aqui${S.fades ? ', com fade para o preto' : ''}.</p>`
+      : `<label class="field"><span class="lbl">Transição para a próxima cena</span><select class="s-trans">${TRANS_OPTS}</select><span class="hint s-trans-hint"></span></label>`}
+  </article>`;
+}
+function renderScenes(){
+  const list = $('scenesList');
+  if (!scenes.length){
+    list.innerHTML = '<div class="empty-scenes"><p>Nenhuma cena ainda. Adicione fotos ou renders para montar o vídeo.</p>' +
+      (refFile ? '<button class="btn ghost sm" data-act="useref" type="button">Usar a imagem de referência</button>' : '') + '</div>';
+  } else {
+    list.innerHTML = scenes.map(sceneHTML).join('');
+    list.querySelectorAll('.scene').forEach(card => {
+      const sc = scenes.find(s => s.id === card.dataset.id);
+      card.querySelector('.s-mov').value = sc.mov;
+      card.querySelector('.s-mov-hint').textContent = CAM_DESC[sc.mov] || '';
+      const st = card.querySelector('.s-trans');
+      if (st){ st.value = sc.trans; card.querySelector('.s-trans-hint').textContent = TRANS_DESC[sc.trans] || ''; }
+    });
+  }
+  renderSummary();
+}
+function renderSummary(){
+  const tl = getTL(), n = scenes.length, tot = Math.round(tl.total);
+  const el = $('scenesSummary');
+  el.classList.toggle('warn', tl.total > 120);
+  el.innerHTML = n ? `<span><b>${n}</b> ${n===1?'cena':'cenas'}</span><span>Duração total: <b>${fmtT(tot)}</b>${tl.total>120?' (passa de 2 min)':''}</span>` : '';
+  $('scenesSub').textContent = n ? `${n} ${n===1?'cena':'cenas'}, ${fmtT(tot)} no total` : 'Nenhuma cena ainda';
+  $('pvSummary').textContent = n
+    ? tl.items.map((it,i) => `Cena ${i+1}: ${it.sc.mov}, ${it.dur} s` + (i<n-1 ? `, depois ${it.sc.trans}` : '')).join('\n')
+    : 'Você ainda não adicionou cenas. O prompt será gerado com o movimento de câmera padrão.';
+  $('pvSummary').style.whiteSpace = 'pre-line';
+}
+function sceneChanged(){
+  invalidateTL();
+  const tl = getTL(); curT = Math.min(curT, tl.total);
+  renderTimeline(); renderSummary(); renderStill();
+}
+const scenesList = $('scenesList');
+scenesList.addEventListener('click', async e => {
+  const btn = e.target.closest('[data-act]'); if (!btn) return;
+  if (btn.dataset.act === 'useref'){ if (refFile) await addFiles([refFile]); return; }
+  const card = btn.closest('.scene'); if (!card) return;
+  const i = scenes.findIndex(s => s.id === card.dataset.id); if (i < 0) return;
+  const act = btn.dataset.act;
+  if (act === 'up' && i > 0){ [scenes[i-1],scenes[i]] = [scenes[i],scenes[i-1]]; }
+  else if (act === 'down' && i < scenes.length-1){ [scenes[i+1],scenes[i]] = [scenes[i],scenes[i+1]]; }
+  else if (act === 'dup'){ scenes.splice(i+1,0,Object.assign({}, scenes[i], {id:uid()})); }
+  else if (act === 'del'){ scenes.splice(i,1); }
+  else if (act === 'dm' || act === 'dp'){
+    const sc = scenes[i]; sc.dur = clamp(sc.dur + (act==='dp'?1:-1), 1, 60);
+    card.querySelector('.s-dur').value = sc.dur; sceneChanged(); return;
+  } else return;
+  renderScenes(); sceneChanged();
+});
+scenesList.addEventListener('change', e => {
+  const card = e.target.closest('.scene'); if (!card) return;
+  const sc = scenes.find(s => s.id === card.dataset.id); if (!sc) return;
+  if (e.target.classList.contains('s-mov')){ sc.mov = e.target.value; card.querySelector('.s-mov-hint').textContent = CAM_DESC[sc.mov] || ''; renderSummary(); renderStill(); }
+  else if (e.target.classList.contains('s-trans')){ sc.trans = e.target.value; card.querySelector('.s-trans-hint').textContent = TRANS_DESC[sc.trans] || ''; sceneChanged(); }
+  else if (e.target.classList.contains('s-dur')){ sc.dur = clamp(Math.round(parseFloat(String(e.target.value).replace(',','.'))||S.defDur),1,60); e.target.value = sc.dur; sceneChanged(); }
+});
+scenesList.addEventListener('input', e => {
+  if (!e.target.classList.contains('s-cap')) return;
+  const sc = scenes.find(s => s.id === e.target.closest('.scene').dataset.id); if (sc){ sc.cap = e.target.value; renderStill(); }
+});
+
+/* =====================================================================
+   Configurações do estúdio
+   ===================================================================== */
+function syncControls(){
+  $('formato').value = S.formato; $('qualidade').value = S.qualidade; $('fit').value = S.fit;
+  $('defCam').value = S.defCam; $('defDur').value = S.defDur; $('defTrans').value = S.defTrans;
+  $('transDur').value = S.transDur; $('transDurLbl').textContent = String(S.transDur).replace('.',',') + ' s';
+  $('defTransHint').textContent = TRANS_DESC[S.defTrans] || '';
+  $('look').value = S.look;
+  $('fxVinheta').checked = S.vinheta; $('fxGrao').checked = S.grao; $('fxBarras').checked = S.barras; $('fxFades').checked = S.fades;
+}
+function bindSel(id, key){ $(id).addEventListener('change', e => { S[key] = e.target.value; save(); afterSetting(key); }); }
+function bindChk(id, key){ $(id).addEventListener('change', e => { S[key] = e.target.checked; save(); afterSetting(key); }); }
+function afterSetting(key){
+  if (key === 'formato' || key === 'qualidade'){ applyPreviewSize(); }
+  if (key === 'defTrans') $('defTransHint').textContent = TRANS_DESC[S.defTrans] || '';
+  if (key === 'fades') renderScenes();
+  renderStill();
+}
+bindSel('formato','formato'); bindSel('qualidade','qualidade'); bindSel('fit','fit');
+bindSel('defCam','defCam'); bindSel('defTrans','defTrans'); bindSel('look','look');
+bindChk('fxVinheta','vinheta'); bindChk('fxGrao','grao'); bindChk('fxBarras','barras'); bindChk('fxFades','fades');
+$('defDur').addEventListener('change', e => { S.defDur = clamp(Math.round(parseFloat(e.target.value)||6),1,30); e.target.value = S.defDur; save(); });
+document.querySelectorAll('[data-target="defDur"]').forEach(b => b.addEventListener('click', () => {
+  S.defDur = clamp(S.defDur + parseInt(b.dataset.step,10), 1, 30); $('defDur').value = S.defDur; save();
+}));
+$('transDur').addEventListener('input', e => {
+  S.transDur = parseFloat(e.target.value); $('transDurLbl').textContent = String(S.transDur).replace('.',',') + ' s';
+  invalidateTL(); save(); renderStill();
+});
+$('applyTransAll').addEventListener('click', () => {
+  if (!scenes.length){ toast('Adicione cenas primeiro.'); return; }
+  scenes.forEach(s => s.trans = S.defTrans);
+  renderScenes(); sceneChanged(); toast('Transição aplicada em todas as cenas.');
+});
+
+/* =====================================================================
+   Gravação do vídeo final
+   ===================================================================== */
+let wake = null, resultURL = null, resultFile = null;
+async function keepAwake(){ try{ if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); }catch(e){} }
+function releaseAwake(){ try{ if (wake) wake.release(); }catch(e){} wake = null; }
+function pickMime(){
+  const list = ['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+  return list.find(m => { try{ return MediaRecorder.isTypeSupported(m); }catch(e){ return false; } }) || '';
+}
+function setRec(p,msg){ $('recBar').style.width = (clamp(p)*100) + '%'; if (msg) $('recMsg').textContent = msg; }
+document.addEventListener('visibilitychange', () => {
+  if (recording && document.hidden){ recAbort = true; if (abortFn) abortFn(); }
+});
+
+async function gerarVideo(){
+  if (recording) return;
+  const tl = getTL();
+  if (!tl.items.length){ toast('Adicione ao menos uma cena para gerar o vídeo.'); return; }
+  if (tl.total > 120.001){ toast('O vídeo passa de 2 minutos. Reduza a duração das cenas.'); return; }
+  if (!stage.captureStream || !window.MediaRecorder){ toast('Este navegador não grava vídeo. Use o Chrome atualizado.'); return; }
+  stopPlayback();
+  recording = true; recAbort = false;
+  $('gerarVideoBtn').disabled = true; $('playBtn').disabled = true;
+  $('resultCard').classList.remove('show');
+  $('recBox').classList.add('show'); setRec(0,'Preparando…');
+  $('recBox').scrollIntoView({behavior:'smooth', block:'center'});
+  await loadFonts();
+  const [W,H] = baseDims(); setStageSize(W,H);
+  keepAwake();
+  const mime = pickMime();
+  let rec;
+  try{
+    const opts = {videoBitsPerSecond: S.qualidade === 'leve' ? 5e6 : 8e6};
+    if (mime) opts.mimeType = mime;
+    rec = new MediaRecorder(stage.captureStream(30), opts);
+  }catch(e){
+    toast('Não consegui iniciar a gravação neste navegador.');
+    finishRec(); return;
+  }
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  const stopped = new Promise(res => { rec.onstop = res; });
+  renderFrame(sctx,tl,0,W,H,true);
+  rec.start(500);
+  const t0 = performance.now();
+  await new Promise(res => {
+    abortFn = res;
+    const loop = () => {
+      if (recAbort){ res(); return; }
+      const el = (performance.now()-t0)/1000, t = Math.min(el, tl.total);
+      renderFrame(sctx,tl,t,W,H,true); updatePlayhead(t);
+      setRec(t/tl.total, 'Gravando… ' + Math.round(t/tl.total*100) + '%');
+      if (el < tl.total + 0.25) requestAnimationFrame(loop); else res();
+    };
+    requestAnimationFrame(loop);
+  });
+  abortFn = null;
+  try{ if (rec.state !== 'inactive') rec.stop(); }catch(e){}
+  await stopped;
+  if (recAbort){
+    finishRec(); toast('Gravação cancelada: a tela saiu do primeiro plano. Tente de novo sem trocar de aplicativo.'); return;
+  }
+  const type = ((rec.mimeType || mime || 'video/webm').split(';')[0]) || 'video/webm';
+  const ext = type.includes('mp4') ? 'mp4' : 'webm';
+  const blob = new Blob(chunks, {type});
+  if (!blob.size){ finishRec(); toast('A gravação saiu vazia. Tente novamente.'); return; }
+  if (resultURL) URL.revokeObjectURL(resultURL);
+  resultURL = URL.createObjectURL(blob);
+  const name = 'atelier-render-' + new Date().toISOString().slice(0,10) + '.' + ext;
+  resultFile = new File([blob], name, {type});
+  const v = $('videoResult');
+  v.onloadedmetadata = () => {
+    if (v.duration === Infinity){ v.currentTime = 1e7; v.ontimeupdate = () => { v.ontimeupdate = null; v.currentTime = 0; }; }
+  };
+  v.src = resultURL;
+  $('resultInfo').textContent = ext.toUpperCase() + ', ' + W + '×' + H + ', ' + (blob.size/1048576).toFixed(1).replace('.',',') + ' MB' +
+    (ext === 'webm' ? '. Formato WebM: se o WhatsApp ou o Instagram não aceitar, veja o Manual em "Problemas comuns".' : '.');
+  $('dlBtn').onclick = () => { const a = document.createElement('a'); a.href = resultURL; a.download = name; document.body.appendChild(a); a.click(); a.remove(); toast('Download iniciado.'); };
+  const canShare = !!(navigator.canShare && navigator.share && navigator.canShare({files:[resultFile]}));
+  $('shareBtn').style.display = canShare ? 'inline-flex' : 'none';
+  $('shareBtn').onclick = async () => { try{ await navigator.share({files:[resultFile], title:'Vídeo S&B Atelier Render'}); }catch(e){} };
+  finishRec();
+  $('resultCard').classList.add('show');
+  $('resultCard').scrollIntoView({behavior:'smooth', block:'start'});
+  toast('Vídeo pronto.');
+}
+function finishRec(){
+  recording = false; releaseAwake();
+  $('recBox').classList.remove('show');
+  $('gerarVideoBtn').disabled = false; $('playBtn').disabled = false;
+  applyPreviewSize(); curT = 0; drawAt(0);
+}
+$('gerarVideoBtn').addEventListener('click', gerarVideo);
+
+/* =====================================================================
+   Geração de prompts
+   ===================================================================== */
+function labelOr(v,f){ return v ? v : f; }
+function montarPromptImagem(){
+  const esvaziar = $('esvaziar').checked;
+  const funcao = val('funcao'), comodo = val('tipoComodo'), estilo = val('estilo'), arquitetura = val('arquitetura'),
+        atmosfera = val('atmosfera'), foco = val('foco'), clima = val('clima'), parede = val('parede'),
+        aplicacao = val('aplicacao'), corEsp = val('corEspecifica'), lifestyle = val('lifestyle');
+  const p = [];
+  p.push('Photorealistic professional interior render, ultra-detailed, 8k, sharp focus, natural real estate photography quality.');
+  p.push(esvaziar
+    ? 'First, digitally empty the room: remove all existing furniture and decor while precisely preserving the original architecture, dimensions, structural elements, window/door positions, lighting and camera perspective from the reference image.'
+    : 'Preserve the original architecture, dimensions and perspective from the reference image.');
+  if (comodo || funcao) p.push(`Stage a ${labelOr(comodo,'room')}${funcao ? ' in a ' + funcao.toLowerCase() + ' setting' : ''}.`);
+  if (estilo) p.push(`Interior design style: ${estilo}.`);
+  if (arquitetura) p.push(`Architectural influence: ${arquitetura}.`);
+  if (atmosfera) p.push(`Overall mood/atmosphere: ${atmosfera}.`);
+  if (foco) p.push(`Scene focus: ${foco}.`);
+  if (clima) p.push(`Lighting condition: ${clima}.`);
+  if (parede || aplicacao || corEsp){
+    let c = `Wall treatment — target: ${labelOr(parede,'main wall')}`;
+    if (aplicacao) c += `, finish: ${aplicacao}`;
+    if (corEsp) c += `, specific color: ${corEsp}`;
+    p.push(c + '.');
+  }
+  p.push(lifestyle && lifestyle !== 'Nenhum'
+    ? `Lifestyle mode: subtly add a natural, realistic human/pet presence — ${lifestyle} — without distracting from the architecture and design, which remain the protagonists of the scene.`
+    : 'No people in the scene; keep the environment empty and focused purely on the architecture and design.');
+  p.push('Maintain photographic realism, coherent shadows and reflections, and consistent scale throughout.');
+  return p.join(' ');
+}
+function montarPromptVideo(incluirImg){
+  const tipo = val('tipoVideo'), motor = val('motor');
+  const tl = getTL(), n = tl.items.length;
+  const p = [];
+  p.push(incluirImg
+    ? 'Create a promotional real-estate video using the rendered interior image described in the image prompt as the visual source.'
+    : 'Create a promotional real-estate video directly from the uploaded reference/scene image(s) (no separate render prompt was generated).');
+  if (n > 1) p.push(`This is a multi-scene video with ${n} scenes joined in sequence into one final video.`);
+  p.push(`Shot type: ${tipo}.`);
+  if (n){
+    p.push('Scene list: ' + tl.items.map((it,i) => {
+      let s = `Scene ${i+1}: camera movement: ${it.sc.mov}, duration: ${it.dur} seconds`;
+      if (i < n-1) s += `, transition to next scene: ${it.sc.trans}`;
+      if ((it.sc.cap||'').trim()) s += `, on-screen caption: "${it.sc.cap.trim()}"`;
+      return s + '.';
+    }).join(' '));
+    p.push(`Total duration: approximately ${Math.round(tl.total)} seconds (maximum 2 minutes).`);
+  } else {
+    p.push(`Camera movement: ${S.defCam}.`);
+    p.push(`Transition effect between scenes/clips: ${S.defTrans}.`);
+    p.push(`Clip duration: approximately ${S.defDur} seconds.`);
+  }
+  if (S.look !== 'Nenhum') p.push(`Color grade: ${S.look}.`);
+  const fx = []; if (S.vinheta) fx.push('vignette'); if (S.grao) fx.push('film grain'); if (S.barras) fx.push('cinematic letterbox bars'); if (S.fades) fx.push('fade in and fade out');
+  if (fx.length) p.push(`Visual effects: ${fx.join(', ')}.`);
+  p.push(`Output format: ${S.formato}, optimized for social media delivery.`);
+  p.push(`Rendering engine: ${motor}.`);
+  p.push('Keep architecture, proportions and lighting consistent with the source image(s); smooth, professional camera motion with no warping or artifacts.');
+  return p.join(' ');
+}
+
+async function copyText(text, ta){
+  try{ if (navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); toast('Copiado.'); return; } }catch(e){}
+  ta.focus(); ta.select(); ta.setSelectionRange(0, 999999);
+  try{ document.execCommand('copy'); toast('Copiado.'); }catch(e){ toast('Não foi possível copiar. Selecione o texto e copie manualmente.'); }
+}
+function showOutputs(boxId, items){
+  const box = $(boxId); box.innerHTML = '';
+  items.forEach(it => {
+    const card = document.createElement('div'); card.className = 'out-card';
+    const h = document.createElement('h3'); h.textContent = it.title;
+    const ta = document.createElement('textarea'); ta.readOnly = true; ta.value = it.text; ta.setAttribute('aria-label', it.title);
+    const acts = document.createElement('div'); acts.className = 'out-actions';
+    acts.innerHTML = '<button class="btn ghost sm" type="button" data-a="copy"><svg class="ic"><use href="#i-copy"/></svg>Copiar</button><button class="btn ghost sm" type="button" data-a="dl"><svg class="ic"><use href="#i-download"/></svg>Baixar .txt</button>';
+    acts.querySelector('[data-a=copy]').onclick = () => copyText(it.text, ta);
+    acts.querySelector('[data-a=dl]').onclick = () => {
+      const url = URL.createObjectURL(new Blob([it.text], {type:'text/plain'}));
+      const a = document.createElement('a'); a.href = url; a.download = it.file; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000); toast('Download iniciado.');
+    };
+    card.append(h, ta, acts); box.appendChild(card);
+  });
+  box.firstElementChild.scrollIntoView({behavior:'smooth', block:'start'});
+  save();
+}
+$('gerarImagemBtn').addEventListener('click', () => showOutputs('outImagemBox', [{title:'Prompt de imagem', text:montarPromptImagem(), file:'prompt-imagem.txt'}]));
+$('gerarPromptVideoBtn').addEventListener('click', () => {
+  const inc = $('incluirImg').checked, items = [];
+  if (inc) items.push({title:'Prompt de imagem', text:montarPromptImagem(), file:'prompt-imagem.txt'});
+  items.push({title:'Prompt de vídeo', text:montarPromptVideo(inc), file:'prompt-video.txt'});
+  showOutputs('outVideoBox', items);
+});
+
+/* =====================================================================
+   Manual: glossários gerados a partir dos mesmos dados do app
+   ===================================================================== */
+$('glossCam').innerHTML = CAMERAS.map(g => g.items).reduce((a,b) => a.concat(b), []).map(n => `<dt>${esc(n)}</dt><dd>${esc(CAM_DESC[n])}</dd>`).join('');
+$('glossTrans').innerHTML = TRANS.map(([n,d]) => `<dt>${esc(n)}</dt><dd>${esc(d)}</dd>`).join('');
+
+/* =====================================================================
+   Início
+   ===================================================================== */
+$('defCam').innerHTML = CAM_OPTS;
+$('defTrans').innerHTML = TRANS_OPTS;
+load();
+syncControls();
+trackAll();
+renderScenes();
+applyPreviewSize();
+renderTimeline();
+drawAt(0);
+setPlayIcon(false);
+showPage(location.hash.slice(1) || 'home');
+
+// Teste/depuração: expõe o mínimo necessário
+window.__atelier = {addFiles, scenes: () => scenes, S, getTL, gerarVideo, drawAt, stage};
+
+})();
+</script>
+</body>
+</html>
