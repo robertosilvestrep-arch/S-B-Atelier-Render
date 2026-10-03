@@ -279,6 +279,20 @@
   .scene-end{font-size:14px;color:var(--faint);padding-top:2px;}
   .empty-scenes{border:1px dashed var(--line);border-radius:14px;padding:22px 16px;text-align:center;color:var(--muted);margin-bottom:12px;}
   .empty-scenes p{margin:0 0 12px;}
+
+  /* ---------- Projetos salvos ---------- */
+  .proj{display:flex;gap:12px;align-items:flex-start;background:var(--ebony);border:1px solid var(--line-soft);border-radius:16px;padding:12px;margin-bottom:12px;}
+  .proj-thumb{width:58px;height:58px;border-radius:10px;object-fit:cover;border:1px solid var(--line);flex:none;background:var(--black);}
+  .proj-thumb.empty{display:flex;align-items:center;justify-content:center;color:var(--faint);}
+  .proj-thumb.empty svg{width:24px;height:24px;}
+  .proj-body{flex:1;min-width:0;}
+  .proj-body b{display:block;font-family:var(--f-display);font-size:17px;font-weight:600;line-height:1.25;word-break:break-word;}
+  .proj-body small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px;}
+  .proj-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+  .proj-actions .btn{min-height:38px;padding:0 14px;font-size:14px;}
+  .proj-actions .ibtn{width:38px;height:38px;border-radius:10px;}
+  .proj-actions .ibtn svg{width:18px;height:18px;}
+  .empty-proj{border:1px dashed var(--line);border-radius:14px;padding:22px 16px;text-align:center;color:var(--muted);}
   .summary-line{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:14.5px;margin:0 2px 12px;}
   .summary-line b{color:var(--gold-hi);font-weight:600;}
   .summary-line.warn b{color:var(--danger);}
@@ -355,6 +369,9 @@
     <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></symbol>
     <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
     <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></symbol>
   </defs>
 </svg>
 
@@ -382,6 +399,7 @@
   <button class="nav-item" data-go="home"><svg class="ic"><use href="#i-home"/></svg><span><b>Início</b><small>Comece por aqui</small></span></button>
   <button class="nav-item" data-go="imagem"><svg class="ic"><use href="#i-image"/></svg><span><b>Prompt de imagem</b><small>Render fotorrealista do ambiente</small></span></button>
   <button class="nav-item" data-go="studio"><svg class="ic"><use href="#i-film"/></svg><span><b>Cenas e vídeo</b><small>Imagens, prompt e vídeo, tudo aqui</small></span></button>
+  <button class="nav-item" data-go="projects"><svg class="ic"><use href="#i-save"/></svg><span><b>Meus projetos</b><small>Salve e consulte seus trabalhos</small></span></button>
   <button class="nav-item" data-go="manual"><svg class="ic"><use href="#i-book"/></svg><span><b>Manual</b><small>Passo a passo de cada tela</small></span></button>
   <div class="drawer-foot">Suas imagens ficam neste aparelho. Nada é enviado para servidores.</div>
 </nav>
@@ -420,6 +438,7 @@
     <div class="routes">
       <button class="route main" data-go="studio"><svg class="ic"><use href="#i-film"/></svg><span><b>Montar vídeo com cenas</b><small>Junte imagens, gere o prompt para IA de vídeo e grave o vídeo final — tudo na mesma tela.</small></span></button>
       <button class="route" data-go="imagem"><svg class="ic"><use href="#i-image"/></svg><span><b>Criar prompt de imagem</b><small>Descreva o ambiente e receba o prompt do render.</small></span></button>
+      <button class="route" data-go="projects"><svg class="ic"><use href="#i-save"/></svg><span><b>Meus projetos</b><small>Salve o trabalho atual e consulte depois.</small></span></button>
       <button class="route" data-go="manual"><svg class="ic"><use href="#i-book"/></svg><span><b>Ler o manual</b><small>Passo a passo para usar cada tela.</small></span></button>
     </div>
 
@@ -744,6 +763,27 @@
   </div>
 </section>
 
+<!-- ============ MEUS PROJETOS ============ -->
+<section class="page" id="page-projects" data-title="Meus projetos">
+  <div class="wrap">
+    <h1 class="ph">Meus projetos</h1>
+    <p class="lead">Salve o que você montou (prompt de imagem, cenas e configurações) para consultar ou continuar depois. Fica guardado neste aparelho, dentro deste navegador.</p>
+
+    <div class="out-card" style="margin-top:0">
+      <h3>Salvar o trabalho atual</h3>
+      <label class="field"><span class="lbl">Nome do projeto</span>
+        <input type="text" id="projName" maxlength="60" placeholder="Ex.: Apartamento Jardins, sala 2">
+      </label>
+      <button class="btn primary block" id="projSaveBtn" type="button"><svg class="ic"><use href="#i-save"/></svg>Salvar projeto atual</button>
+      <p class="hint" id="projSaveHint" style="margin-top:10px">Guarda o prompt de imagem, as cenas (com as fotos) e as configurações de vídeo.</p>
+    </div>
+
+    <h2 class="sh">Projetos salvos</h2>
+    <p class="hint" id="projStorageInfo" style="margin:-6px 0 14px"></p>
+    <div id="projectsList"></div>
+  </div>
+</section>
+
 <!-- ============ MANUAL ============ -->
 <section class="page man" id="page-manual" data-title="Manual">
   <div class="wrap">
@@ -770,6 +810,7 @@
           <li><b>Início:</b> resumo e atalhos.</li>
           <li><b>Prompt de imagem:</b> monta o texto do render fotorrealista.</li>
           <li><b>Cenas e vídeo:</b> junta as imagens em um vídeo final e também gera o prompt de vídeo para IA.</li>
+          <li><b>Meus projetos:</b> salva e consulta os trabalhos que você montou.</li>
           <li><b>Manual:</b> esta página.</li>
         </ul>
         <p>Para fechar o menu, toque no X, fora do menu ou em qualquer item.</p>
@@ -814,17 +855,30 @@
     </details>
 
     <details class="sec">
-      <summary><span class="badge">4</span><span class="sec-title">Movimentos de câmera<small>O que cada um faz</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <summary><span class="badge">4</span><span class="sec-title">Salvar e consultar projetos<small>Para continuar depois</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <div class="sec-body">
+        <ol class="steps">
+          <li>No menu, toque em <b>Meus projetos</b>.</li>
+          <li>Dê um nome ao trabalho (por exemplo, o endereço do imóvel) e toque em <b>Salvar projeto atual</b>. Isso guarda o prompt de imagem, as cenas (com as fotos) e as configurações de vídeo.</li>
+          <li>A lista abaixo mostra todos os projetos salvos, com miniatura, quantidade de cenas e data. Toque em <b>Abrir</b> para carregar um projeto de volta nas telas de Prompt de imagem e Cenas e vídeo.</li>
+          <li>Use o ícone de lápis para <b>renomear</b> e o de lixeira para <b>excluir</b> um projeto.</li>
+        </ol>
+        <div class="callout"><b>Importante.</b> Os projetos ficam guardados apenas neste aparelho e neste navegador — não são enviados para nenhum servidor. Se trocar de celular, limpar os dados do navegador, ou abrir o app por outro link, os projetos salvos aqui não aparecerão. Para economizar espaço, as fotos dos projetos salvos ficam em um tamanho reduzido; se quiser a qualidade máxima da foto original, reenvie-a na cena depois de abrir o projeto.</div>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary><span class="badge">5</span><span class="sec-title">Movimentos de câmera<small>O que cada um faz</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
       <div class="sec-body"><dl class="gloss" id="glossCam"></dl></div>
     </details>
 
     <details class="sec">
-      <summary><span class="badge">5</span><span class="sec-title">Transições<small>O que cada uma faz</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <summary><span class="badge">6</span><span class="sec-title">Transições<small>O que cada uma faz</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
       <div class="sec-body"><dl class="gloss" id="glossTrans"></dl></div>
     </details>
 
     <details class="sec">
-      <summary><span class="badge">6</span><span class="sec-title">Problemas comuns<small>E como resolver</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <summary><span class="badge">7</span><span class="sec-title">Problemas comuns<small>E como resolver</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
       <div class="sec-body">
         <ul>
           <li><b>O vídeo saiu em .webm e o WhatsApp ou o Instagram não aceita.</b> Atualize o Chrome (ele grava em MP4) ou converta o arquivo com um conversor online gratuito.</li>
@@ -832,7 +886,8 @@
           <li><b>O vídeo trava ou falha no celular.</b> Em Formato e qualidade, escolha "Leve (720p)", feche outros aplicativos e use menos cenas por vez.</li>
           <li><b>Aparecem bordas desfocadas nas laterais.</b> É o enquadramento "Imagem inteira". Troque para "Preencher a tela" se preferir sem bordas.</li>
           <li><b>A imagem parece cortada.</b> É o "Preencher a tela". Volte para "Imagem inteira" para ver a foto completa.</li>
-          <li><b>Perdi as cenas ao recarregar a página.</b> As imagens não ficam salvas. As opções escolhidas ficam guardadas no aparelho.</li>
+          <li><b>Perdi as cenas ao recarregar a página.</b> As imagens não ficam salvas automaticamente. Use <b>Meus projetos</b> para salvar antes de sair.</li>
+          <li><b>"Não consegui salvar" ao salvar um projeto.</b> As fotos desse projeto ocupam mais espaço do que o navegador permite guardar. Remova alguma cena, ou exclua projetos antigos em Meus projetos, e tente de novo.</li>
           <li><b>Aparece "passa de 2 minutos".</b> Reduza a duração das cenas ou remova alguma.</li>
         </ul>
       </div>
@@ -956,7 +1011,7 @@ function getTL(){
 /* =====================================================================
    Navegação e menu lateral
    ===================================================================== */
-const PAGES = ['home','imagem','studio','manual'];
+const PAGES = ['home','imagem','studio','projects','manual'];
 const drawer = $('drawer'), scrim = $('scrim'), menuBtn = $('menuBtn');
 function openDrawer(){
   drawer.classList.add('open'); scrim.classList.add('open');
@@ -987,6 +1042,7 @@ function showPage(id){
   closeDrawer();
   window.scrollTo(0,0);
   if (id === 'studio'){ applyPreviewSize(); renderScenes(); renderTimeline(); drawAt(curT); }
+  if (id === 'projects'){ renderProjectsList(); if (currentProjectId) { const idx=getProjIndex().find(p=>p.id===currentProjectId); if (idx && !$('projName').value) $('projName').value = idx.name; } }
 }
 function go(id){
   if (location.hash.slice(1) !== id) { try{ location.hash = id; }catch(e){ showPage(id); } }
@@ -1826,6 +1882,164 @@ $('gerarPromptVideoBtn').addEventListener('click', () => {
    ===================================================================== */
 $('glossCam').innerHTML = CAMERAS.map(g => g.items).reduce((a,b) => a.concat(b), []).map(n => `<dt>${esc(n)}</dt><dd>${esc(CAM_DESC[n])}</dd>`).join('');
 $('glossTrans').innerHTML = TRANS.map(([n,d]) => `<dt>${esc(n)}</dt><dd>${esc(d)}</dd>`).join('');
+
+/* =====================================================================
+   Meus projetos: salvar, listar, abrir, renomear, excluir
+   Guardado inteiramente no navegador (localStorage), sem servidor.
+   ===================================================================== */
+const PROJ_IDX_KEY = 'atelierProjectsIndex';
+const projKey = id => 'atelierProject:' + id;
+let currentProjectId = null;
+
+function fmtDate(ts){
+  try{ return new Date(ts).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+  catch(e){ return ''; }
+}
+function getProjIndex(){
+  try{ const raw = localStorage.getItem(PROJ_IDX_KEY); return raw ? JSON.parse(raw) : []; }catch(e){ return []; }
+}
+function setProjIndex(list){ localStorage.setItem(PROJ_IDX_KEY, JSON.stringify(list)); }
+
+// Reduz a imagem para um tamanho mais leve antes de guardar no navegador
+function shrinkForStorage(canvas, maxSide, quality){
+  const k = Math.min(1, maxSide/Math.max(canvas.width, canvas.height));
+  if (k >= 1) return canvas.toDataURL('image/jpeg', quality);
+  const c = mk(Math.max(1,Math.round(canvas.width*k)), Math.max(1,Math.round(canvas.height*k)));
+  c.getContext('2d').drawImage(canvas,0,0,c.width,c.height);
+  return c.toDataURL('image/jpeg', quality);
+}
+
+function buildProjectPayload(){
+  const imagem = {}; FORM_IDS.forEach(id => imagem[id] = $(id).value); FORM_CHECK.forEach(id => imagem[id] = $(id).checked);
+  return {
+    S: JSON.parse(JSON.stringify(S)),
+    imagem,
+    scenes: scenes.map(sc => ({
+      name: sc.name, mov: sc.mov, dur: sc.dur, trans: sc.trans, cap: sc.cap,
+      img: shrinkForStorage(sc.src, 1280, 0.74)
+    }))
+  };
+}
+function approxSize(obj){ return new Blob([JSON.stringify(obj)]).size; }
+function fmtBytes(n){ return n < 1024*1024 ? Math.round(n/1024)+' KB' : (n/1048576).toFixed(1).replace('.',',')+' MB'; }
+
+function refreshStorageInfo(){
+  const el = $('projStorageInfo'); if (!el) return;
+  let total = 0; const idx = getProjIndex();
+  idx.forEach(p => { try{ const raw = localStorage.getItem(projKey(p.id)); if (raw) total += raw.length; }catch(e){} });
+  el.textContent = idx.length
+    ? `${idx.length} projeto${idx.length===1?'':'s'} salvo${idx.length===1?'':'s'} · usando cerca de ${fmtBytes(total)} do armazenamento deste navegador.`
+    : 'Nenhum projeto salvo ainda neste navegador.';
+}
+
+async function saveProject(){
+  let name = $('projName').value.trim();
+  if (!name) name = 'Projeto ' + fmtDate(Date.now());
+  const idx = getProjIndex();
+  const existing = idx.find(p => p.name.toLowerCase() === name.toLowerCase() && p.id !== currentProjectId);
+  if (existing && !confirm(`Já existe um projeto chamado "${existing.name}". Substituir pelo que você está editando agora?`)) return;
+  const id = existing ? existing.id : (currentProjectId || uid());
+  const payload = buildProjectPayload();
+  const full = {id, name, savedAt: Date.now(), ...payload};
+  try{
+    localStorage.setItem(projKey(id), JSON.stringify(full));
+  }catch(e){
+    toast('Não consegui salvar: as fotos deste projeto ocupam mais espaço do que o navegador permite guardar. Tente remover alguma cena e salvar de novo.');
+    return;
+  }
+  const entry = {id, name, savedAt: full.savedAt, scenes: scenes.length, thumb: scenes[0] ? scenes[0].thumb : null};
+  const next = idx.filter(p => p.id !== id); next.unshift(entry);
+  setProjIndex(next);
+  currentProjectId = id;
+  toast('Projeto salvo.');
+  renderProjectsList();
+}
+
+function renderProjectsList(){
+  const list = $('projectsList'); if (!list) return;
+  const idx = getProjIndex();
+  if (!idx.length){
+    list.innerHTML = '<div class="empty-proj">Você ainda não salvou nenhum projeto. Monte o prompt e as cenas e toque em "Salvar projeto atual" acima.</div>';
+  } else {
+    list.innerHTML = idx.map(p => `
+      <div class="proj" data-id="${p.id}">
+        ${p.thumb ? `<img class="proj-thumb" src="${p.thumb}" alt="">` : `<div class="proj-thumb empty"><svg class="ic"><use href="#i-folder"/></svg></div>`}
+        <div class="proj-body">
+          <b>${esc(p.name)}</b>
+          <small>${p.scenes} ${p.scenes===1?'cena':'cenas'} · ${fmtDate(p.savedAt)}</small>
+          <div class="proj-actions">
+            <button class="btn ghost sm" data-act="open" type="button">Abrir</button>
+            <button class="ibtn" data-act="rename" type="button" aria-label="Renomear projeto ${esc(p.name)}"><svg class="ic"><use href="#i-edit"/></svg></button>
+            <button class="ibtn danger" data-act="del" type="button" aria-label="Excluir projeto ${esc(p.name)}"><svg class="ic"><use href="#i-trash"/></svg></button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+  refreshStorageInfo();
+}
+
+async function dataURLToCanvas(url){
+  const img = await new Promise((res,rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+  const c = mk(img.naturalWidth, img.naturalHeight); c.getContext('2d').drawImage(img,0,0);
+  return c;
+}
+async function openProject(id){
+  if (scenes.length && !confirm('Abrir este projeto vai substituir as cenas e opções que você está editando agora. Continuar?')) return;
+  let full;
+  try{ const raw = localStorage.getItem(projKey(id)); full = raw && JSON.parse(raw); }catch(e){}
+  if (!full){ toast('Não encontrei os dados desse projeto.'); return; }
+  try{
+    const newScenes = [];
+    for (const sc of full.scenes){
+      const canvas = await dataURLToCanvas(sc.img);
+      newScenes.push({id:uid(), src:canvas, thumb:sc.img, name:sc.name, mov:sc.mov, dur:sc.dur, trans:sc.trans, cap:sc.cap || ''});
+    }
+    scenes = newScenes;
+    if (full.S) Object.keys(S).forEach(k => { if (full.S[k] !== undefined) S[k] = full.S[k]; });
+    if (full.imagem){
+      if (full.imagem.funcao){ $('funcao').value = full.imagem.funcao; fillComodos(); }
+      FORM_IDS.forEach(k => { if (full.imagem[k] !== undefined) $(k).value = full.imagem[k]; });
+      FORM_CHECK.forEach(k => { if (full.imagem[k] !== undefined) $(k).checked = !!full.imagem[k]; });
+    }
+    currentProjectId = id;
+    $('projName').value = full.name;
+    syncControls(); trackAll(); save();
+    invalidateTL(); curT = 0;
+    renderScenes(); renderTimeline(); applyPreviewSize(); drawAt(0);
+    toast('Projeto aberto.');
+    go('studio');
+  }catch(e){ toast('Não consegui abrir esse projeto. Alguma foto pode estar corrompida.'); }
+}
+function renameProject(id){
+  const idx = getProjIndex(), entry = idx.find(p => p.id === id); if (!entry) return;
+  const name = prompt('Novo nome do projeto:', entry.name);
+  if (!name || !name.trim()) return;
+  entry.name = name.trim();
+  setProjIndex(idx);
+  try{
+    const raw = localStorage.getItem(projKey(id));
+    if (raw){ const full = JSON.parse(raw); full.name = entry.name; localStorage.setItem(projKey(id), JSON.stringify(full)); }
+  }catch(e){}
+  if (currentProjectId === id) $('projName').value = entry.name;
+  renderProjectsList();
+}
+function deleteProject(id){
+  const idx = getProjIndex(), entry = idx.find(p => p.id === id); if (!entry) return;
+  if (!confirm(`Excluir o projeto "${entry.name}"? Isso não pode ser desfeito.`)) return;
+  setProjIndex(idx.filter(p => p.id !== id));
+  try{ localStorage.removeItem(projKey(id)); }catch(e){}
+  if (currentProjectId === id) currentProjectId = null;
+  renderProjectsList();
+  toast('Projeto excluído.');
+}
+$('projSaveBtn').addEventListener('click', saveProject);
+$('projectsList').addEventListener('click', e => {
+  const btn = e.target.closest('[data-act]'); if (!btn) return;
+  const id = btn.closest('.proj').dataset.id;
+  if (btn.dataset.act === 'open') openProject(id);
+  else if (btn.dataset.act === 'rename') renameProject(id);
+  else if (btn.dataset.act === 'del') deleteProject(id);
+});
 
 /* =====================================================================
    Início
