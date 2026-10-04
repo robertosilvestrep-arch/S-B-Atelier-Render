@@ -766,10 +766,24 @@
         </label>
         <label class="field"><span class="lbl">Enquadramento da imagem</span>
           <select id="fit">
-            <option value="contain">Imagem inteira, com fundo desfocado nas bordas</option>
-            <option value="cover">Preencher a tela, a câmera percorre a imagem</option>
+            <optgroup label="Mostrar a imagem inteira">
+              <option value="contain">Imagem inteira, com fundo desfocado nas bordas</option>
+              <option value="contain-frame">Imagem inteira com moldura (margem + fundo desfocado)</option>
+              <option value="contain-black">Imagem inteira, fundo preto</option>
+              <option value="contain-white">Imagem inteira, fundo branco</option>
+            </optgroup>
+            <optgroup label="Meio-termo">
+              <option value="balanced">Equilibrado (preenche boa parte da tela, corta pouco)</option>
+            </optgroup>
+            <optgroup label="Preencher a tela (corta as bordas)">
+              <option value="cover">Preencher a tela, centralizado</option>
+              <option value="cover-top">Preencher, priorizando o topo</option>
+              <option value="cover-bottom">Preencher, priorizando a base</option>
+              <option value="cover-left">Preencher, priorizando a esquerda</option>
+              <option value="cover-right">Preencher, priorizando a direita</option>
+            </optgroup>
           </select>
-          <span class="hint">Em vídeo vertical com fotos horizontais, "Preencher a tela" deixa os movimentos de câmera muito mais visíveis.</span>
+          <span class="hint">Em vídeo vertical com fotos horizontais, "Preencher a tela" deixa os movimentos de câmera muito mais visíveis. Use "priorizando" para escolher qual lado da foto fica visível quando há corte.</span>
         </label>
       </div>
     </details>
@@ -938,7 +952,7 @@
           <li><b>O vídeo saiu em .webm e o WhatsApp ou o Instagram não aceita.</b> Atualize o Chrome (ele grava em MP4) ou converta o arquivo com um conversor online gratuito.</li>
           <li><b>A gravação foi cancelada.</b> Ela cancela se a tela sair do primeiro plano. Tente de novo sem trocar de aplicativo.</li>
           <li><b>O vídeo trava ou falha no celular.</b> Em Formato e qualidade, escolha "Leve (720p)", feche outros aplicativos e use menos cenas por vez.</li>
-          <li><b>Aparecem bordas desfocadas nas laterais.</b> É o enquadramento "Imagem inteira". Troque para "Preencher a tela" se preferir sem bordas.</li>
+          <li><b>Aparecem bordas desfocadas nas laterais.</b> É o enquadramento "Imagem inteira". Troque para "Preencher a tela" (ou "Equilibrado") se preferir sem bordas, ou use "fundo preto"/"fundo branco" se não quiser o desfoque.</li>
           <li><b>A imagem parece cortada.</b> É o "Preencher a tela". Volte para "Imagem inteira" para ver a foto completa.</li>
           <li><b>Perdi as cenas ao recarregar a página.</b> As imagens não ficam salvas automaticamente. Use <b>Meus projetos</b> para salvar antes de sair.</li>
           <li><b>"Não consegui salvar" ao salvar um projeto sem conta.</b> As fotos desse projeto ocupam mais espaço do que o navegador permite guardar. Remova alguma cena, ou exclua projetos antigos em Meus projetos, e tente de novo.</li>
@@ -1384,14 +1398,25 @@ function paintScene(ctx, it, t, W, H){
   const sc = it.sc;
   const localT = clamp((t-it.start)/it.dur), ts = clamp(t-it.start, 0, it.dur);
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
-  ctx.drawImage(getBg(sc,W,H), 0, 0);
+  const fit = S.fit || 'contain';
+  if (fit === 'contain-black' || fit === 'contain-white'){ ctx.fillStyle = fit === 'contain-black' ? '#000' : '#fff'; ctx.fillRect(0,0,W,H); }
+  else ctx.drawImage(getBg(sc,W,H), 0, 0);
   const cam = getCamera(sc.mov, localT, ts);
   const iw = sc.src.width, ih = sc.src.height;
-  const base = S.fit === 'cover' ? Math.max(W/iw, H/ih) : Math.min(W/iw, H/ih);
+  const sMin = Math.min(W/iw, H/ih), sMax = Math.max(W/iw, H/ih);
+  let base = sMin, ax = 0, ay = 0;
+  if (fit.indexOf('cover') === 0){
+    base = sMax;
+    if (fit === 'cover-top') ay = -1; else if (fit === 'cover-bottom') ay = 1;
+    else if (fit === 'cover-left') ax = -1; else if (fit === 'cover-right') ax = 1;
+  } else if (fit === 'balanced'){ base = sMin + (sMax - sMin)*0.55; }
+  else if (fit === 'contain-frame'){ base = sMin*0.86; }
   const k = base*cam.s, dw = iw*k, dh = ih*k;
   const mx = Math.max((dw-W)/2, W*0.04), my = Math.max((dh-H)/2, H*0.04);
+  // deslocamento de ancoragem: mostra o lado escolhido da foto quando há corte
+  const ox = -ax*Math.max(0, (iw*base - W)/2), oy = -ay*Math.max(0, (ih*base - H)/2);
   ctx.save();
-  ctx.translate(W/2 + cam.dx*mx, H/2 + cam.dy*my);
+  ctx.translate(W/2 + ox + cam.dx*mx, H/2 + oy + cam.dy*my);
   if (cam.r) ctx.rotate(cam.r);
   ctx.drawImage(sc.src, -dw/2, -dh/2, dw, dh);
   ctx.restore();
