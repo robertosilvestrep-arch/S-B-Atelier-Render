@@ -169,7 +169,7 @@
   .field{display:block;margin-bottom:12px;}
   .field > span.lbl{display:block;font-size:14px;font-weight:500;color:var(--muted);margin-bottom:6px;}
   .hint{display:block;font-size:13.5px;color:var(--faint);margin-top:6px;line-height:1.4;}
-  select,input[type=text],input[type=number]{
+  select,input[type=text],input[type=number],input[type=email],input[type=password]{
     width:100%;min-height:50px;border:1px solid var(--line-soft);border-radius:12px;
     padding:12px 14px;font:inherit;font-size:16px;color:var(--ivory);background-color:var(--black);
     -webkit-appearance:none;appearance:none;
@@ -767,9 +767,37 @@
 <section class="page" id="page-projects" data-title="Meus projetos">
   <div class="wrap">
     <h1 class="ph">Meus projetos</h1>
-    <p class="lead">Salve o que você montou (prompt de imagem, cenas e configurações) para consultar ou continuar depois. Fica guardado neste aparelho, dentro deste navegador.</p>
+    <p class="lead" id="projLead">Salve o que você montou (prompt de imagem, cenas e configurações) para consultar ou continuar depois.</p>
 
-    <div class="out-card" style="margin-top:0">
+    <div class="out-card" style="margin-top:0" id="authCard">
+      <h3 id="authTitle">Entrar para sincronizar</h3>
+      <p class="hint" id="authHint" style="margin:0 0 14px">Entre com e-mail e senha para salvar seus projetos na nuvem e abri-los em qualquer aparelho. Sem conta, os projetos ficam só neste navegador.</p>
+
+      <div id="authForm">
+        <label class="field"><span class="lbl">E-mail</span>
+          <input type="email" id="authEmail" autocomplete="email" inputmode="email" placeholder="voce@email.com">
+        </label>
+        <label class="field"><span class="lbl">Senha</span>
+          <input type="password" id="authPass" autocomplete="current-password" placeholder="Mínimo 6 caracteres">
+        </label>
+        <p class="hint" id="authError" style="display:none;color:var(--danger);margin:-4px 0 10px"></p>
+        <div class="out-actions">
+          <button class="btn primary sm" id="authLoginBtn" type="button">Entrar</button>
+          <button class="btn ghost sm" id="authSignupBtn" type="button">Criar conta</button>
+        </div>
+        <p class="hint" style="margin-top:10px"><a href="#" id="authForgotLink" style="color:var(--gold-hi)">Esqueci minha senha</a></p>
+      </div>
+
+      <div id="authLogged" style="display:none">
+        <p class="hint" style="margin:0 0 14px">Conectado como <b id="authEmailLabel" style="color:var(--ivory)"></b>. Seus projetos agora sincronizam com a nuvem — abra no celular ou no computador com a mesma conta.</p>
+        <div class="out-actions">
+          <button class="btn ghost sm" id="authLogoutBtn" type="button">Sair</button>
+          <button class="btn ghost sm" id="migrateBtn" type="button" style="display:none">Enviar projetos deste aparelho para a nuvem</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="out-card">
       <h3>Salvar o trabalho atual</h3>
       <label class="field"><span class="lbl">Nome do projeto</span>
         <input type="text" id="projName" maxlength="60" placeholder="Ex.: Apartamento Jardins, sala 2">
@@ -778,7 +806,7 @@
       <p class="hint" id="projSaveHint" style="margin-top:10px">Guarda o prompt de imagem, as cenas (com as fotos) e as configurações de vídeo.</p>
     </div>
 
-    <h2 class="sh">Projetos salvos</h2>
+    <h2 class="sh" id="projListTitle">Projetos salvos neste aparelho</h2>
     <p class="hint" id="projStorageInfo" style="margin:-6px 0 14px"></p>
     <div id="projectsList"></div>
   </div>
@@ -855,15 +883,24 @@
     </details>
 
     <details class="sec">
-      <summary><span class="badge">4</span><span class="sec-title">Salvar e consultar projetos<small>Para continuar depois</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+      <summary><span class="badge">4</span><span class="sec-title">Salvar e consultar projetos<small>Para continuar depois, em qualquer aparelho</small></span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
       <div class="sec-body">
+        <div class="sub-h">Com conta (sincroniza entre aparelhos)</div>
         <ol class="steps">
           <li>No menu, toque em <b>Meus projetos</b>.</li>
-          <li>Dê um nome ao trabalho (por exemplo, o endereço do imóvel) e toque em <b>Salvar projeto atual</b>. Isso guarda o prompt de imagem, as cenas (com as fotos) e as configurações de vídeo.</li>
-          <li>A lista abaixo mostra todos os projetos salvos, com miniatura, quantidade de cenas e data. Toque em <b>Abrir</b> para carregar um projeto de volta nas telas de Prompt de imagem e Cenas e vídeo.</li>
+          <li>No topo da tela, crie uma conta com e-mail e senha (ou entre, se já tiver uma) em <b>Entrar para sincronizar</b>.</li>
+          <li>Com a conta conectada, dê um nome ao trabalho e toque em <b>Salvar projeto atual</b> — ele é guardado na nuvem, nessa conta.</li>
+          <li>Em outro celular ou computador, abra o app e entre com a <b>mesma conta</b>: os mesmos projetos aparecem lá, prontos para abrir.</li>
+          <li>Se você já tinha projetos salvos neste aparelho antes de criar a conta, toque em <b>Enviar projetos deste aparelho para a nuvem</b> para não perdê-los.</li>
+        </ol>
+        <div class="sub-h">Sem conta (só neste aparelho)</div>
+        <p>Sem entrar numa conta, o botão <b>Salvar projeto atual</b> continua funcionando normalmente — só que guarda os projetos apenas neste navegador, neste aparelho, sem sincronizar com mais nada.</p>
+        <div class="sub-h">Em qualquer um dos dois casos</div>
+        <ol class="steps">
+          <li>A lista mostra todos os projetos salvos, com miniatura, quantidade de cenas e data. Toque em <b>Abrir</b> para carregar um projeto de volta nas telas de Prompt de imagem e Cenas e vídeo.</li>
           <li>Use o ícone de lápis para <b>renomear</b> e o de lixeira para <b>excluir</b> um projeto.</li>
         </ol>
-        <div class="callout"><b>Importante.</b> Os projetos ficam guardados apenas neste aparelho e neste navegador — não são enviados para nenhum servidor. Se trocar de celular, limpar os dados do navegador, ou abrir o app por outro link, os projetos salvos aqui não aparecerão. Para economizar espaço, as fotos dos projetos salvos ficam em um tamanho reduzido; se quiser a qualidade máxima da foto original, reenvie-a na cena depois de abrir o projeto.</div>
+        <div class="callout"><b>Importante.</b> Sem conta, os projetos ficam só neste aparelho e navegador — se trocar de celular ou limpar os dados do navegador, eles somem. Com conta, ficam guardados com segurança na nuvem, protegidos por login, e acessíveis de qualquer aparelho. Em ambos os casos, para economizar espaço as fotos ficam em um tamanho reduzido; se quiser a qualidade máxima da foto original depois de abrir um projeto, reenvie-a na cena.</div>
       </div>
     </details>
 
@@ -887,7 +924,9 @@
           <li><b>Aparecem bordas desfocadas nas laterais.</b> É o enquadramento "Imagem inteira". Troque para "Preencher a tela" se preferir sem bordas.</li>
           <li><b>A imagem parece cortada.</b> É o "Preencher a tela". Volte para "Imagem inteira" para ver a foto completa.</li>
           <li><b>Perdi as cenas ao recarregar a página.</b> As imagens não ficam salvas automaticamente. Use <b>Meus projetos</b> para salvar antes de sair.</li>
-          <li><b>"Não consegui salvar" ao salvar um projeto.</b> As fotos desse projeto ocupam mais espaço do que o navegador permite guardar. Remova alguma cena, ou exclua projetos antigos em Meus projetos, e tente de novo.</li>
+          <li><b>"Não consegui salvar" ao salvar um projeto sem conta.</b> As fotos desse projeto ocupam mais espaço do que o navegador permite guardar. Remova alguma cena, ou exclua projetos antigos em Meus projetos, e tente de novo.</li>
+          <li><b>Não consigo entrar na conta, ou a lista de projetos não carrega.</b> Verifique sua conexão com a internet — a sincronização por conta precisa dela. Sem internet, você ainda pode salvar projetos neste aparelho normalmente.</li>
+          <li><b>Criei a conta e não consigo entrar.</b> Alguns provedores pedem para confirmar o e-mail primeiro: veja a caixa de entrada (e o spam) por uma mensagem de confirmação antes de tentar entrar.</li>
           <li><b>Aparece "passa de 2 minutos".</b> Reduza a duração das cenas ou remova alguma.</li>
         </ul>
       </div>
@@ -898,6 +937,8 @@
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
 'use strict';
@@ -930,6 +971,84 @@ function toast(msg){
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }
+
+/* =====================================================================
+   Supabase: login e sincronização de projetos na nuvem
+   A chave abaixo é a chave pública (anon/publishable). Quem protege os
+   dados é a regra de acesso (RLS) no banco, vinculada ao usuário logado —
+   por isso é segura para ficar aqui, dentro do arquivo.
+   ===================================================================== */
+const SUPA_URL = 'https://zxbzaefoycqrbulriwxv.supabase.co';
+const SUPA_KEY = 'sb_publishable_-V4TnSGOgrNKrmuYIpXkHg__4w8LMuM';
+const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
+let session = null;
+
+function authErr(msg){ const e = $('authError'); if (!msg){ e.style.display='none'; e.textContent=''; return; } e.textContent = msg; e.style.display='block'; }
+function friendlyAuthError(err){
+  const m = (err && err.message) || '';
+  if (/invalid login credentials/i.test(m)) return 'E-mail ou senha incorretos.';
+  if (/already registered|already exists/i.test(m)) return 'Já existe uma conta com esse e-mail. Tente entrar.';
+  if (/password.*(6|least)/i.test(m)) return 'A senha precisa ter pelo menos 6 caracteres.';
+  if (/email/i.test(m) && /invalid|format/i.test(m)) return 'Digite um e-mail válido.';
+  if (/rate limit/i.test(m)) return 'Muitas tentativas. Aguarde um pouco e tente de novo.';
+  if (/fetch|network|failed to fetch/i.test(m)) return 'Sem conexão com o servidor. Verifique sua internet e tente de novo.';
+  return m || 'Não consegui completar essa ação. Tente de novo.';
+}
+
+function updateAuthUI(){
+  const logged = !!session;
+  $('authForm').style.display = logged ? 'none' : 'block';
+  $('authLogged').style.display = logged ? 'block' : 'none';
+  if (logged) $('authEmailLabel').textContent = session.user.email;
+  $('authTitle').textContent = logged ? 'Conta conectada' : 'Entrar para sincronizar';
+  $('projListTitle').textContent = logged ? 'Projetos na nuvem' : 'Projetos salvos neste aparelho';
+  $('projSaveHint').textContent = logged
+    ? 'Guarda na nuvem: prompt de imagem, cenas (com as fotos) e configurações de vídeo. Disponível em qualquer aparelho com esta conta.'
+    : 'Guarda neste navegador: prompt de imagem, cenas (com as fotos) e configurações de vídeo.';
+  const hasLocal = getProjIndex().length > 0;
+  $('migrateBtn').style.display = (logged && hasLocal) ? 'inline-flex' : 'none';
+}
+
+if (sb){
+  sb.auth.getSession().then(({data}) => { session = data.session || null; updateAuthUI(); if (session) renderProjectsList(); });
+  sb.auth.onAuthStateChange((_evt, newSession) => { session = newSession; updateAuthUI(); renderProjectsList(); });
+} else {
+  document.addEventListener('DOMContentLoaded', () => {
+    authErr('Não consegui carregar o login agora (sem conexão?). Você ainda pode salvar projetos neste aparelho.');
+  });
+}
+
+async function doAuth(kind){
+  if (!sb){ authErr('Login indisponível sem conexão com a internet.'); return; }
+  const email = $('authEmail').value.trim(), pass = $('authPass').value;
+  if (!email || !pass){ authErr('Preencha e-mail e senha.'); return; }
+  authErr(null);
+  const btn = $(kind === 'signup' ? 'authSignupBtn' : 'authLoginBtn');
+  btn.disabled = true;
+  try{
+    const { error } = kind === 'signup'
+      ? await sb.auth.signUp({email, password:pass})
+      : await sb.auth.signInWithPassword({email, password:pass});
+    if (error) throw error;
+    if (kind === 'signup' && !(await sb.auth.getSession()).data.session){
+      toast('Conta criada. Confira seu e-mail para confirmar o cadastro e depois entre.');
+    } else {
+      toast('Conectado.');
+    }
+  }catch(err){ authErr(friendlyAuthError(err)); }
+  btn.disabled = false;
+}
+$('authLoginBtn').addEventListener('click', () => doAuth('login'));
+$('authSignupBtn').addEventListener('click', () => doAuth('signup'));
+$('authLogoutBtn').addEventListener('click', async () => { if (sb) await sb.auth.signOut(); toast('Você saiu da conta.'); });
+$('authForgotLink').addEventListener('click', async e => {
+  e.preventDefault();
+  const email = $('authEmail').value.trim();
+  if (!email){ authErr('Digite seu e-mail no campo acima e toque em "Esqueci minha senha" de novo.'); return; }
+  if (!sb){ authErr('Indisponível sem conexão com a internet.'); return; }
+  try{ const { error } = await sb.auth.resetPasswordForEmail(email); if (error) throw error; toast('Enviamos um e-mail com instruções para redefinir a senha.'); }
+  catch(err){ authErr(friendlyAuthError(err)); }
+});
 
 /* =====================================================================
    Dados: movimentos de câmera e transições
@@ -1890,6 +2009,7 @@ $('glossTrans').innerHTML = TRANS.map(([n,d]) => `<dt>${esc(n)}</dt><dd>${esc(d)
 const PROJ_IDX_KEY = 'atelierProjectsIndex';
 const projKey = id => 'atelierProject:' + id;
 let currentProjectId = null;
+let currentProjectName = null;
 
 function fmtDate(ts){
   try{ return new Date(ts).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
@@ -1923,8 +2043,33 @@ function buildProjectPayload(){
 function approxSize(obj){ return new Blob([JSON.stringify(obj)]).size; }
 function fmtBytes(n){ return n < 1024*1024 ? Math.round(n/1024)+' KB' : (n/1048576).toFixed(1).replace('.',',')+' MB'; }
 
+/* ---- nuvem (Supabase), usada só quando há sessão logada ---- */
+async function cloudList(){
+  const { data, error } = await sb.from('projects').select('id,name,scene_count,thumb,saved_at').order('saved_at', {ascending:false});
+  if (error) throw error;
+  return data.map(r => ({id:r.id, name:r.name, scenes:r.scene_count, thumb:r.thumb, savedAt:new Date(r.saved_at).getTime()}));
+}
+async function cloudGet(id){
+  const { data, error } = await sb.from('projects').select('name,data').eq('id', id).single();
+  if (error) throw error;
+  return {...data.data, name:data.name};
+}
+async function cloudUpsert(id, name, payload){
+  const row = {name, scene_count:payload.scenes.length, thumb:payload.scenes[0]?payload.scenes[0].img:null, saved_at:new Date().toISOString(), data:payload, user_id:session.user.id};
+  if (id){ const {error} = await sb.from('projects').update(row).eq('id', id); if (error) throw error; return id; }
+  const {data, error} = await sb.from('projects').insert(row).select('id').single();
+  if (error) throw error; return data.id;
+}
+async function cloudRename(id, name){ const {error} = await sb.from('projects').update({name}).eq('id', id); if (error) throw error; }
+async function cloudDelete(id){ const {error} = await sb.from('projects').delete().eq('id', id); if (error) throw error; }
+async function cloudFindByName(name){
+  const { data, error } = await sb.from('projects').select('id,name').eq('name', name);
+  if (error) throw error;
+  return data[0] || null;
+}
+
 function refreshStorageInfo(){
-  const el = $('projStorageInfo'); if (!el) return;
+  const el = $('projStorageInfo'); if (!el || session) { if (el && session) el.textContent = ''; return; }
   let total = 0; const idx = getProjIndex();
   idx.forEach(p => { try{ const raw = localStorage.getItem(projKey(p.id)); if (raw) total += raw.length; }catch(e){} });
   el.textContent = idx.length
@@ -1935,31 +2080,51 @@ function refreshStorageInfo(){
 async function saveProject(){
   let name = $('projName').value.trim();
   if (!name) name = 'Projeto ' + fmtDate(Date.now());
-  const idx = getProjIndex();
-  const existing = idx.find(p => p.name.toLowerCase() === name.toLowerCase() && p.id !== currentProjectId);
-  if (existing && !confirm(`Já existe um projeto chamado "${existing.name}". Substituir pelo que você está editando agora?`)) return;
-  const id = existing ? existing.id : (currentProjectId || uid());
   const payload = buildProjectPayload();
-  const full = {id, name, savedAt: Date.now(), ...payload};
+  const btn = $('projSaveBtn'); btn.disabled = true;
+  // só atualiza o projeto já aberto se o nome continuar o mesmo; nome diferente = projeto novo
+  const sameAsOpen = currentProjectId && currentProjectName && name.toLowerCase() === currentProjectName.toLowerCase();
+  const reuseId = sameAsOpen ? currentProjectId : null;
   try{
-    localStorage.setItem(projKey(id), JSON.stringify(full));
-  }catch(e){
-    toast('Não consegui salvar: as fotos deste projeto ocupam mais espaço do que o navegador permite guardar. Tente remover alguma cena e salvar de novo.');
-    return;
-  }
-  const entry = {id, name, savedAt: full.savedAt, scenes: scenes.length, thumb: scenes[0] ? scenes[0].thumb : null};
-  const next = idx.filter(p => p.id !== id); next.unshift(entry);
-  setProjIndex(next);
-  currentProjectId = id;
-  toast('Projeto salvo.');
+    if (session){
+      const existing = await cloudFindByName(name);
+      if (existing && existing.id !== reuseId && !confirm(`Já existe um projeto na nuvem chamado "${existing.name}". Substituir pelo que você está editando agora?`)){ btn.disabled=false; return; }
+      const id = existing ? existing.id : reuseId;
+      currentProjectId = await cloudUpsert(id, name, payload);
+      currentProjectName = name;
+      toast('Projeto salvo na nuvem.');
+    } else {
+      const idx = getProjIndex();
+      const existing = idx.find(p => p.name.toLowerCase() === name.toLowerCase() && p.id !== reuseId);
+      if (existing && !confirm(`Já existe um projeto chamado "${existing.name}". Substituir pelo que você está editando agora?`)){ btn.disabled=false; return; }
+      const id = existing ? existing.id : (reuseId || uid());
+      const full = {id, name, savedAt: Date.now(), ...payload};
+      try{ localStorage.setItem(projKey(id), JSON.stringify(full)); }
+      catch(e){ toast('Não consegui salvar: as fotos deste projeto ocupam mais espaço do que o navegador permite guardar. Tente remover alguma cena e salvar de novo.'); btn.disabled=false; return; }
+      const entry = {id, name, savedAt: full.savedAt, scenes: scenes.length, thumb: scenes[0] ? scenes[0].thumb : null};
+      const next = idx.filter(p => p.id !== id); next.unshift(entry);
+      setProjIndex(next);
+      currentProjectId = id;
+      currentProjectName = name;
+      toast('Projeto salvo neste aparelho.');
+    }
+  }catch(e){ toast('Não consegui salvar na nuvem agora: ' + friendlyAuthError(e)); }
+  btn.disabled = false;
   renderProjectsList();
 }
 
-function renderProjectsList(){
+async function renderProjectsList(){
   const list = $('projectsList'); if (!list) return;
-  const idx = getProjIndex();
+  let idx;
+  if (session){
+    list.innerHTML = '<div class="empty-proj">Carregando projetos da nuvem…</div>';
+    try{ idx = await cloudList(); }
+    catch(e){ list.innerHTML = '<div class="empty-proj">Não consegui carregar seus projetos da nuvem agora. Verifique sua internet.</div>'; return; }
+  } else {
+    idx = getProjIndex();
+  }
   if (!idx.length){
-    list.innerHTML = '<div class="empty-proj">Você ainda não salvou nenhum projeto. Monte o prompt e as cenas e toque em "Salvar projeto atual" acima.</div>';
+    list.innerHTML = `<div class="empty-proj">Você ainda não salvou nenhum projeto${session?' nesta conta':' neste navegador'}. Monte o prompt e as cenas e toque em "Salvar projeto atual" acima.</div>`;
   } else {
     list.innerHTML = idx.map(p => `
       <div class="proj" data-id="${p.id}">
@@ -1976,6 +2141,7 @@ function renderProjectsList(){
       </div>`).join('');
   }
   refreshStorageInfo();
+  updateAuthUI();
 }
 
 async function dataURLToCanvas(url){
@@ -1983,55 +2149,81 @@ async function dataURLToCanvas(url){
   const c = mk(img.naturalWidth, img.naturalHeight); c.getContext('2d').drawImage(img,0,0);
   return c;
 }
+async function applyProjectData(full){
+  const newScenes = [];
+  for (const sc of full.scenes){
+    const canvas = await dataURLToCanvas(sc.img);
+    newScenes.push({id:uid(), src:canvas, thumb:sc.img, name:sc.name, mov:sc.mov, dur:sc.dur, trans:sc.trans, cap:sc.cap || ''});
+  }
+  scenes = newScenes;
+  if (full.S) Object.keys(S).forEach(k => { if (full.S[k] !== undefined) S[k] = full.S[k]; });
+  if (full.imagem){
+    if (full.imagem.funcao){ $('funcao').value = full.imagem.funcao; fillComodos(); }
+    FORM_IDS.forEach(k => { if (full.imagem[k] !== undefined) $(k).value = full.imagem[k]; });
+    FORM_CHECK.forEach(k => { if (full.imagem[k] !== undefined) $(k).checked = !!full.imagem[k]; });
+  }
+  $('projName').value = full.name;
+  syncControls(); trackAll(); save();
+  invalidateTL(); curT = 0;
+  renderScenes(); renderTimeline(); applyPreviewSize(); drawAt(0);
+}
 async function openProject(id){
   if (scenes.length && !confirm('Abrir este projeto vai substituir as cenas e opções que você está editando agora. Continuar?')) return;
-  let full;
-  try{ const raw = localStorage.getItem(projKey(id)); full = raw && JSON.parse(raw); }catch(e){}
-  if (!full){ toast('Não encontrei os dados desse projeto.'); return; }
   try{
-    const newScenes = [];
-    for (const sc of full.scenes){
-      const canvas = await dataURLToCanvas(sc.img);
-      newScenes.push({id:uid(), src:canvas, thumb:sc.img, name:sc.name, mov:sc.mov, dur:sc.dur, trans:sc.trans, cap:sc.cap || ''});
-    }
-    scenes = newScenes;
-    if (full.S) Object.keys(S).forEach(k => { if (full.S[k] !== undefined) S[k] = full.S[k]; });
-    if (full.imagem){
-      if (full.imagem.funcao){ $('funcao').value = full.imagem.funcao; fillComodos(); }
-      FORM_IDS.forEach(k => { if (full.imagem[k] !== undefined) $(k).value = full.imagem[k]; });
-      FORM_CHECK.forEach(k => { if (full.imagem[k] !== undefined) $(k).checked = !!full.imagem[k]; });
-    }
+    const full = session ? await cloudGet(id) : (() => { const raw = localStorage.getItem(projKey(id)); return raw && JSON.parse(raw); })();
+    if (!full){ toast('Não encontrei os dados desse projeto.'); return; }
+    await applyProjectData(full);
     currentProjectId = id;
-    $('projName').value = full.name;
-    syncControls(); trackAll(); save();
-    invalidateTL(); curT = 0;
-    renderScenes(); renderTimeline(); applyPreviewSize(); drawAt(0);
+    currentProjectName = full.name;
     toast('Projeto aberto.');
     go('studio');
-  }catch(e){ toast('Não consegui abrir esse projeto. Alguma foto pode estar corrompida.'); }
+  }catch(e){ toast('Não consegui abrir esse projeto: ' + friendlyAuthError(e)); }
 }
-function renameProject(id){
-  const idx = getProjIndex(), entry = idx.find(p => p.id === id); if (!entry) return;
-  const name = prompt('Novo nome do projeto:', entry.name);
+async function renameProject(id){
+  let current = '';
+  if (session){ const idx = await cloudList().catch(()=>[]); current = (idx.find(p=>p.id===id)||{}).name || ''; }
+  else { current = (getProjIndex().find(p => p.id === id) || {}).name || ''; }
+  const name = prompt('Novo nome do projeto:', current);
   if (!name || !name.trim()) return;
-  entry.name = name.trim();
-  setProjIndex(idx);
   try{
-    const raw = localStorage.getItem(projKey(id));
-    if (raw){ const full = JSON.parse(raw); full.name = entry.name; localStorage.setItem(projKey(id), JSON.stringify(full)); }
-  }catch(e){}
-  if (currentProjectId === id) $('projName').value = entry.name;
+    if (session){ await cloudRename(id, name.trim()); }
+    else {
+      const idx = getProjIndex(), entry = idx.find(p => p.id === id); if (!entry) return;
+      entry.name = name.trim(); setProjIndex(idx);
+      const raw = localStorage.getItem(projKey(id));
+      if (raw){ const full = JSON.parse(raw); full.name = entry.name; localStorage.setItem(projKey(id), JSON.stringify(full)); }
+    }
+    if (currentProjectId === id){ $('projName').value = name.trim(); currentProjectName = name.trim(); }
+    renderProjectsList();
+  }catch(e){ toast('Não consegui renomear: ' + friendlyAuthError(e)); }
+}
+async function deleteProject(id){
+  if (!confirm('Excluir este projeto? Isso não pode ser desfeito.')) return;
+  try{
+    if (session){ await cloudDelete(id); } else { setProjIndex(getProjIndex().filter(p => p.id !== id)); try{ localStorage.removeItem(projKey(id)); }catch(e){} }
+    if (currentProjectId === id){ currentProjectId = null; currentProjectName = null; }
+    renderProjectsList();
+    toast('Projeto excluído.');
+  }catch(e){ toast('Não consegui excluir: ' + friendlyAuthError(e)); }
+}
+async function migrateLocalToCloud(){
+  if (!session) return;
+  const idx = getProjIndex(); if (!idx.length) return;
+  $('migrateBtn').disabled = true;
+  let ok = 0, fail = 0;
+  for (const entry of idx){
+    try{
+      const raw = localStorage.getItem(projKey(entry.id)); if (!raw) continue;
+      const full = JSON.parse(raw);
+      await cloudUpsert(null, full.name, {S: full.S, imagem: full.imagem, scenes: full.scenes});
+      ok++;
+    }catch(e){ fail++; }
+  }
+  $('migrateBtn').disabled = false;
+  toast(fail ? `${ok} projeto(s) enviado(s), ${fail} falharam.` : `${ok} projeto(s) enviado(s) para a nuvem.`);
   renderProjectsList();
 }
-function deleteProject(id){
-  const idx = getProjIndex(), entry = idx.find(p => p.id === id); if (!entry) return;
-  if (!confirm(`Excluir o projeto "${entry.name}"? Isso não pode ser desfeito.`)) return;
-  setProjIndex(idx.filter(p => p.id !== id));
-  try{ localStorage.removeItem(projKey(id)); }catch(e){}
-  if (currentProjectId === id) currentProjectId = null;
-  renderProjectsList();
-  toast('Projeto excluído.');
-}
+$('migrateBtn').addEventListener('click', migrateLocalToCloud);
 $('projSaveBtn').addEventListener('click', saveProject);
 $('projectsList').addEventListener('click', e => {
   const btn = e.target.closest('[data-act]'); if (!btn) return;
